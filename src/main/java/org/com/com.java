@@ -1,3 +1,5 @@
+package Common;
+
 public enum Token
 {
         // instantiation
@@ -18,7 +20,7 @@ public enum Token
         RESIZE,
         ROTATE,
         // for blank lines
-        NOP, // should be optimised out when constructing AST
+        NOP; // should be optimised out when constructing AST
 }
 
 class TokeniseException extends Exception
