@@ -1,4 +1,4 @@
-package com;
+package org.shapelang.common;
 
 public class Twople<U,V> 
 { 

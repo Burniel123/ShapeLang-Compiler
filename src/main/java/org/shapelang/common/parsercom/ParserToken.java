@@ -1,4 +1,4 @@
-package com.parsercom;
+package org.shapelang.common.parsercom;
 
 public enum ParserToken
 {

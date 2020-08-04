@@ -1,5 +1,5 @@
 // kept for reference
-
+package org.shapelang.common;
 public class com
 {
 
