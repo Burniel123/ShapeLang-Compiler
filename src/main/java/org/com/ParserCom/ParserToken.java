@@ -1,4 +1,4 @@
-package Common.ParserCom;
+package com.parsercom;
 
 public enum ParserToken
 {
@@ -7,4 +7,6 @@ public enum ParserToken
 	LOOP,
 	ACTION,
 	SEQ,
-}	
+	OTHER,
+}
+

@@ -1,8 +1,9 @@
-package Common.ParserCom;
-
-import Common.parsercom;
+package com.parsercom;
 
 public interface StmtType
 {
-	public Token stmtType();
+	default ParserToken stmtType()
+	{
+		return OTHER;
+	}
 }
