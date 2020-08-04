@@ -1,9 +1,9 @@
-package com.parsercom;
+package org.shapelang.common.parsercom;
 
 public interface StmtType
 {
 	default ParserToken stmtType()
 	{
-		return OTHER;
+		return ParserToken.OTHER;
 	}
 }

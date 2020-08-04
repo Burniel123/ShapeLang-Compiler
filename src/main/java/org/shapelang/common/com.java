@@ -1,4 +1,4 @@
-package Common;
+package org.shapelang.common;
 
 public class com
 {

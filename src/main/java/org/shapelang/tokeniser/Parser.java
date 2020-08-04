@@ -1,5 +1,6 @@
-import com.Twople;
-import com.parsercom.*;
+package org.shapelang.tokeniser;
+
+import org.shapelang.common.*;
 // as far as possible, this parser is functional
 // some loops will be found. This is for efficiency reasons
 // this could be done entirely functionally, but this would involve recursion

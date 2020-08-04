@@ -1,6 +1,6 @@
-package com.parsercom;
+package org.shapelang.common.parsercom;
 
-import com.Twople;
+import org.shapelang.common.Twople;
 
 public class CanvasInit
 {
