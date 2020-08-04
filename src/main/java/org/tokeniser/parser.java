@@ -9,7 +9,7 @@ import com.parsercom.*;
 public class Parser
 {
 
-	private final static String newPara = "\u0x0a"; // TODO - find actual utf 16 for paragraph break
+	private final static String newPara = "\n"; // TODO - ensure this works
 	private final static String CANV_INIT_ERR = "Initialise canvas with <size> could not be found.\nPlease ensure this is at the top of the file!";
 	private final static String CMD_ERR = "Error deciphering following text: ";
 	private final static String LOOP_OOB_ERR = "Error with number in for loop.\nCheck your for loops have valid numbers";
@@ -26,7 +26,7 @@ public class Parser
 			case "initialise" : 
 				final CanvasInit ci = new CanvasInit();
 				ci.size = sizeString(words[2]);
-				ci.next = tokenise(Arrays.copyOfRange(words,1,words.length()).fst;
+				ci.next = tokenise(Arrays.copyOfRange(words,1,words.length())).fst;
 				return ci;
 				break;
 			default: throw new TokeniseException(CANV_INIT_ERR);
@@ -128,7 +128,7 @@ public class Parser
 
 	private static Twople<Text,Integer> loopify(String[] lines, int count) {
 		return tokenise(lines.copyOfRange
-				(lines, count+1, lines.length);
+				(lines, count+1, lines.length));
 	}
 
 	private static String[] wordify(String line){
@@ -166,7 +166,7 @@ public class Parser
 		return new Twople(fst,snd);
 	}
 
-	private static dropWhileNEQ(String toDrop, String eq)
+	private static String dropWhileNEQ(String toDrop, String eq)
 	{ // TODO - investigate if built in method exists
 		int count = 0;
 		
