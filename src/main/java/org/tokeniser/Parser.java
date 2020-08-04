@@ -1,5 +1,7 @@
+package tokeniser;
+
 import com.Twople;
-import com.parsercom.*;
+import static com.parsercom.*;
 // as far as possible, this parser is functional
 // some loops will be found. This is for efficiency reasons
 // this could be done entirely functionally, but this would involve recursion
@@ -44,14 +46,13 @@ public class Parser
 		// change so as to avoid recursion
 		int count = 0;
 
-		while(count < lines.length)
+		while(count < lines.length())
 		{
 			final String[] line = lines[count].splitAt(" ");
 			final Statement curAct; // current action
 
 			switch(line[0]) {
 				case "put":
-					
 					break;
 				case "move":
 					break;
@@ -128,7 +129,7 @@ public class Parser
 
 	private static Twople<Text,Integer> loopify(String[] lines, int count) {
 		return tokenise(lines.copyOfRange
-				(lines, count+1, lines.length));
+				(lines, count+1, lines.length()));
 	}
 
 	private static String[] wordify(String line){
@@ -170,7 +171,7 @@ public class Parser
 	{ // TODO - investigate if built in method exists
 		int count = 0;
 		
-		while(toDrop.length() - eq.length > count && 
+		while(toDrop.length() - eq.length() > count && 
 			eq != toDrop.substring(count,count+eq.length()))
 				count++;
 

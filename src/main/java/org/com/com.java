@@ -1,4 +1,4 @@
-package Common;
+// kept for reference
 
 public class com
 {

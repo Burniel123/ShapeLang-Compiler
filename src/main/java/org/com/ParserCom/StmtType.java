@@ -4,6 +4,6 @@ public interface StmtType
 {
 	default ParserToken stmtType()
 	{
-		return OTHER;
+		return ParserToken.OTHER;
 	}
 }
