@@ -4,10 +4,6 @@ import java.util.Optional;
 
 public class Loop implements StmtType
 {
-	public Loop(Optional<Integer> numIter) {
-		this.numIter = numIter;
-	}
-
 	@Override
 	public ParserToken stmtType()
 	{
@@ -15,5 +11,6 @@ public class Loop implements StmtType
 	}
 
 	public final Optional<Integer> numIter; // None indicates infinite loop
+	public final List<Shape<T>> shapes;
 	public final Text contents;
 }
