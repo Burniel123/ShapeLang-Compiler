@@ -1,20 +1,29 @@
 package org.shapelang;
 
-import javafx.scene.canvas.Canvas;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.GridPane;
 
-public class CanvasPane extends Pane
+//This class is probably obsolete now.
+public class CanvasPane extends GridPane
 {
-    private final Canvas canvas;
+    //private final Canvas canvas;
+   // private final ArrayList<Pane> cells = new ArrayList<Pane>();
+    private final int numCols;
+    private final int numRows;
 
-    public CanvasPane(double width, double height)
+    public CanvasPane(int width, int height)
     {
-        canvas = new Canvas(width, height);
-        setWidth(width);
-        setWidth(height);
+        super();
+        numCols = width;
+        numRows = height;
+    }
 
-        canvas.widthProperty().bind(widthProperty());
-        canvas.heightProperty().bind(heightProperty());
-        getChildren().add(canvas);
+    public double getCellWidth()
+    {
+        return getScene().getWindow().getWidth()/numCols;
+    }
+
+    public double getCellHeight()
+    {
+        return getScene().getWindow().getHeight()/numRows;
     }
 }
