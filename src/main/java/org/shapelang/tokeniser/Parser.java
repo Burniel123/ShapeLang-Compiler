@@ -1,7 +1,9 @@
-
 package org.shapelang.tokeniser;
 
+import org.shapelang.shapes.Shape;
 import org.shapelang.common.*;
+import java.util.Map; // useful if implementation is to be swapped out later
+import java.util.HashMap; // concrete implementation for above
 
 // as far as possible, this parser is functional
 // some loops will be found. This is for efficiency reasons
@@ -16,9 +18,11 @@ public class Parser
 	private final static String CANV_INIT_ERR = "Initialise canvas with <size> could not be found.\nPlease ensure this is at the top of the file!";
 	private final static String CMD_ERR = "Error deciphering following text: ";
 	private final static String LOOP_OOB_ERR = "Error with number in for loop.\nCheck your for loops have valid numbers";
+	private final static String COORD_OOB_ERR = "Error with the co-ordinates of a shape.\nCheck your shapes have coordinates in form (x,y)";
+	private final static String PUT_SYN_ERR = "Error with syntax of Put statement.\nCheck your Put statements are all correct";
+	private final static String NO_INIT_ERR = "No shape with that identifier was found.\nCheck you've initialised that shape.";
 
-	public static CanvasInit tokenise(String toTokenise) throws TokeniseException
-	{
+	public static CanvasInit tokenise(String toTokenise) throws TokeniseException {
 		final String lc = toTokenise.toLowerCase();
 		final String fst = lc.dropWhileNEQ("initialise");
 		final String[] lines = fst.splitAt(newPara);
@@ -40,22 +44,44 @@ public class Parser
 	}
 		
 	// when it calls itself for a loop, pos in loop required
-	private static Twople<Text,Integer> tokenise(String[] lines) throws TokeniseException
-	{
+	private static Twople<Text,Integer> tokenise(String[] lines) throws TokeniseException {
 		final Text head = new Text();
-		Text cur = head; // this is part of our loop variant. This will 
+		final Map<String,Shape> idMap = new HashMap(); // stores
+		// mapping from identifiers to objects
+		Text cur = Optional.of(head); // this is part of our loop variant. This will 
 		// change so as to avoid recursion
 		int count = 0;
 
-		while(count < lines.length())
-		{
+		while(count < lines.length()) {
 			final String[] line = lines[count].splitAt(" ");
 			final Statement curAct; // current action
 
 			switch(line[0]) {
 				case "put":
+					final Put put = new Put();
+					final Twople<String,Shape> binding 
+						= shapeify(line);
+					idMap.put(binding.fst,binding.snd);
+
+					put.shapeRef = binding.snd;
+					put.shapeSizeParse(line);
+					put.coords = coordinatify(line);
+
+					curAct = put;
 					break;
 				case "move":
+					final Move mv = new Move();
+					final String ident = line[1];
+					final Shape maybeShape 
+						= idMap.get(ident);
+					if(null == maybeShape)
+						throw new TokeniseException(NO_INIT_ERR);
+					else {
+						mv.shapeRef = maybeShape;
+						mv.newCoord = coordinatify(line);
+					}
+
+					curAct = mv;
 					break;
 				case "resize":
 					break;
@@ -112,6 +138,40 @@ public class Parser
 		}
 
 		return new Twople(head,count);
+	}
+
+	// maps put line to shape and String identifier
+	private static Twople<String,Shape> shapeify(String[] line) {
+		boolean shapeFound = false;
+		final Shape shape;
+		for(String word: line) {
+			switch(word) {
+				case "circle": shape = new Circle();
+					shapeFound = true;
+					break;
+				default: 
+					if(shapeFound)
+						return new Twople(word,shape);
+					break;
+			}
+		}
+
+		throw new TokeniseException(PUT_SYN_ERR);
+	}
+
+	private static Twople<Integer,Integer> coordinatify(String[] line) {
+		boolean next = false;
+		for(String word: line) {
+			switch(next) {
+				case true: return sizeString(line);
+					break;
+				case false: next = word.equals("to");
+					break;
+			}
+		}
+
+		throw new TokeniseException(COORD_OOB_ERR);
+
 	}
 
 	private static int loopIterify(String[] line) {
