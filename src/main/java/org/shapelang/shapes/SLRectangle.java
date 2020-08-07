@@ -4,28 +4,30 @@ import javafx.animation.RotateTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import org.shapelang.common.Twople;
 
-public class SLCircle extends Circle implements Shape<Double>
+public class SLRectangle extends Rectangle implements Shape<Twople<Double,Double>>
 {
-    public SLCircle(double radius)
+    public SLRectangle(double width, double height)
     {
-        super(radius);
+        super(width, height);
     }
 
     @Override
-    public void resize(Double newSize)
+    public void resize(Twople<Double, Double> newSize)
     {
-        setRadius(newSize);
+        setWidth(newSize.fst);
+        setHeight(newSize.snd);
     }
 
     @Override
-    public void resizeTransition(Double newSize, float timePeriod)
+    public void resizeTransition(Twople<Double, Double> newSize, float timePeriod)
     {
         ScaleTransition st = new ScaleTransition(Duration.seconds(timePeriod), this);
-        st.setByX(newSize);
-        st.setByY(newSize);
+        st.setByX(newSize.fst);
+        st.setByY(newSize.snd);
         st.play();
     }
 
@@ -46,16 +48,21 @@ public class SLCircle extends Circle implements Shape<Double>
     @Override
     public void place(int x, int y)
     {
-        setCenterX(x);
-        setCenterY(y);
+        double diffX = getWidth()/2;
+        double diffY = getHeight()/2;
+
+        setX(x - diffX);
+        setY(y - diffY);
     }
 
     @Override
     public void moveTransition(int x, int y, float timePeriod)
     {
         TranslateTransition tt = new TranslateTransition(Duration.seconds(timePeriod), this);
-        tt.setToX(x);
-        tt.setToY(y);
+        double diffX = getWidth()/2;
+        double diffY = getHeight()/2;
+        tt.setToX(x - diffX);
+        tt.setToY(y - diffY);
         tt.play();
     }
 
