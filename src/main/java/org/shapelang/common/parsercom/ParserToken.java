@@ -8,6 +8,7 @@ public enum ParserToken
 	LOOP,
 	ACTION,
 	SEQ,
+	BLOCK,
 	OTHER,
 }
 
