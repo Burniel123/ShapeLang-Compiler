@@ -73,17 +73,31 @@ public class Parser
 					final Move mv = new Move();
 					final String ident = line[1];
 					final Shape maybeShape 
-						= idMap.get(ident);
-					if(null == maybeShape)
-						throw new TokeniseException(NO_INIT_ERR);
-					else {
-						mv.shapeRef = maybeShape;
+						= getShape(idmap,ident);
+					
+					if(maybeShape.isPresent()) {
+						mv.shapeRef = maybeShape.get();
 						mv.newCoord = coordinatify(line);
 					}
-
+					else
+						throw new TokeniseException(NO_INIT_ERR);
+					
 					curAct = mv;
 					break;
 				case "resize":
+					final Resize rsz = new Resize();
+					final String ident = line[1];
+					final Shape maybeShape
+						= getShape(idmap,ident);
+					if(maybeShape.isPresent) {
+						rsz.shapeRef = maybeShape.get();
+						rsz.newCoorgd = coordinatify(line);
+					}
+					else
+						throw new TokeniseExcepiton(NO_INIT_ERR);
+
+
+					curAct = rsz;
 					break;
 				case "loop":
 					final Loop loop = new Loop();
@@ -91,7 +105,7 @@ public class Parser
 					loop.numIter = Optional.empty();
 
 					final Twople<Text,Integer> res = 
-						loopify(lines,count);
+						loopify(lines,count); // TODO - how to treat mappings from 'super function'
 					loop.contents = twople.fst;
 					count = twople.snd;
 					
@@ -138,6 +152,15 @@ public class Parser
 		}
 
 		return new Twople(head,count);
+	}
+
+	private static Optional<V> getShape<U,V>(Map<U,V> map, U key) {
+		final V value 
+			= map.getOrDefault(key, null); // careful with npe
+		if(null == value)
+			return Optional.empty();
+		else
+			return Optional.of(value);
 	}
 
 	// maps put line to shape and String identifier
