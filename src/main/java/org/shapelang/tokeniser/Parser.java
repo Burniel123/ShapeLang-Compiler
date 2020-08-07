@@ -48,8 +48,8 @@ public class Parser
 		final Text head = new Text();
 		final Map<String,Shape> idMap = new HashMap(); // stores
 		// mapping from identifiers to objects
-		Text cur = Optional.of(head); // this is part of our loop variant. This will 
-		// change so as to avoid recursion
+		Text cur = Optional.of(head);
+	      	// current text being parsed	
 		int count = 0;
 
 		while(count < lines.length()) {
@@ -127,12 +127,14 @@ public class Parser
 					curAct = loop;
 					break;
 				case "endloop":
-					return new Twople(head,count);
+					cur.next = Optional.empty();
+					return new Twople(head,count); // is this correct
 					break;
 				case "endfor":
 					return new Twople(head,count);
 					break;
 				case "block":
+					curAct = blockify(idmap,line);
 					break;
 				case "sequential":
 					break;
@@ -146,12 +148,34 @@ public class Parser
 
 			// move onto next line
 			final Text nxt = new Text();
-			cur.next = nxt;
-			cur = cur.next;
+			cur.next = Optional.of(nxt);
+			cur = nxt;
 			count++;
 		}
 
 		return new Twople(head,count);
+	}
+
+	private static Block blockify(Map<String,Shapes> map, String[] line) {
+		final Block bl = new Block();
+		switch(line[0]) {
+			case "_":
+				bl.shapes = map.values(); // TODO - ensure this casts correctly from collection to array
+				break;
+			default: final String[] idents = Array.copyOfRange(line,1,line.length) 
+				bl.shapes = getMappings(map, idents);
+				break;
+		}
+		return bl;
+	}
+
+	private static V[] getMappings(Map<U,V> map, U[] keys) {
+		final V[] values = new Array[keys.length];
+		for(int i = 0; i < keys.length; i++) {
+			final U key = keys[i];
+			values[i] = map.get(key);
+		}
+		return values;
 	}
 
 	private static Optional<V> getShape<U,V>(Map<U,V> map, U key) {
