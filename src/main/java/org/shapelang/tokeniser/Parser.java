@@ -46,8 +46,9 @@ public class Parser
 	// when it calls itself for a loop, pos in loop required
 	private static Twople<Text,Integer> tokenise(String[] lines) throws TokeniseException {
 		final Text head = new Text();
-		final Map<String,Shape> idMap = new HashMap(); // stores
-		// mapping from identifiers to objects
+		final Map<String,Shape> idMap = new HashMap();
+		// stores mapping from identifiers to objects
+		// only tokenise should add or remove from this
 		Text cur = Optional.of(head);
 	      	// current text being parsed	
 		int count = 0;
@@ -99,6 +100,9 @@ public class Parser
 
 					curAct = rsz;
 					break;
+
+				// TODO - how to deal with only certain shapes
+				// being allowed in loop?
 				case "loop":
 					final Loop loop = new Loop();
 
@@ -127,18 +131,24 @@ public class Parser
 					curAct = loop;
 					break;
 				case "endloop":
-					cur.next = Optional.empty();
-					return new Twople(head,count); // is this correct
+					cur.next = Optional.of(head); // loops are cyclic 'lists' 
+					return new Twople(head,count);
 					break;
 				case "endfor":
+					cur.next = Optional.of(head);
 					return new Twople(head,count);
 					break;
 				case "block":
-					curAct = blockify(idmap,line);
+					curAct = restrictify
+						(idmap,line,new Block());
 					break;
 				case "sequential":
+					curAct = restrictify
+						(idmap,line,new SequentialBlock());
 					break;
 				case "endsequential":
+					cur = Optional.empty();
+					return new Twople(head,count);
 					break;
 				default: throw new TokeniseException(CMD_ERR+lines[0]);
 					break;
@@ -156,18 +166,20 @@ public class Parser
 		return new Twople(head,count);
 	}
 
-	private static Block blockify(Map<String,Shapes> map, String[] line) {
-		final Block bl = new Block();
+	// so called because for map: A -> B, restrictify: A -> C st. C subset B
+	private static StmtType restrictify
+		(Map<String,Shapes> map, String[] line, StmtType x) {
 		switch(line[0]) {
 			case "_":
-				bl.shapes = map.values(); // TODO - ensure this casts correctly from collection to array
+				x.shapes = map.values(); // TODO - ensure this casts correctly from collection to array
 				break;
 			default: final String[] idents = Array.copyOfRange(line,1,line.length) 
-				bl.shapes = getMappings(map, idents);
+				x.shapes = getMappings(map, idents);
 				break;
 		}
-		return bl;
-	}
+		return x;
+
+	}	
 
 	private static V[] getMappings(Map<U,V> map, U[] keys) {
 		final V[] values = new Array[keys.length];

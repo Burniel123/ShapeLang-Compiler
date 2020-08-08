@@ -11,6 +11,6 @@ public class Loop implements StmtType
 	}
 
 	public final Optional<Integer> numIter; // None indicates infinite loop
-	public final List<Shape<T>> shapes;
+	public final Shape[] shapes;
 	public final Text contents;
 }

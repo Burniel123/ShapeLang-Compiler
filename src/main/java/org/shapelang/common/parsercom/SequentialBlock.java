@@ -4,6 +4,6 @@ import java.util.List;
 
 public class SequentialBlock
 {
-	public final List<Shape> shapes;
+	public final Shape[] shapes;
 	public final Text text;
 }
