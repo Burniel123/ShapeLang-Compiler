@@ -61,8 +61,8 @@ public class SLRectangle extends Rectangle implements Shape
         TranslateTransition tt = new TranslateTransition(Duration.seconds(timePeriod), this);
         double diffX = getWidth()/2;
         double diffY = getHeight()/2;
-        tt.setToX(x - diffX);
-        tt.setToY(y - diffY);
+        tt.setToX(x - diffX - getX());
+        tt.setToY(y - diffY - getY());
         tt.play();
     }
 

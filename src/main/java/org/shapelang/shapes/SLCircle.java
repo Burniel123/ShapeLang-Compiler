@@ -54,8 +54,8 @@ public class SLCircle extends Circle implements Shape
     public void moveTransition(int x, int y, float timePeriod)
     {
         TranslateTransition tt = new TranslateTransition(Duration.seconds(timePeriod), this);
-        tt.setToX(x);
-        tt.setToY(y);
+        tt.setToX(x - getCenterX());
+        tt.setToY(y - getCenterY());
         tt.play();
     }
 
