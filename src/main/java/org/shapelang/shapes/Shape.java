@@ -5,17 +5,16 @@ import javafx.scene.paint.Color;
 /**
  * Defines signatures for transformations which all "shapes" must be capable of.
  * To be implemented by all "shape" classes.
- * @param <T> - information required for a size - may be a single value (eg for a circle), a tuple, etc.
  *
  * @author Daniel Burton
  */
-public interface Shape<T>
+public interface Shape
 {
-    //Resize immediately using the type-dependent information required for the shape in question:
-    void resize(T newSize);
+    //Resize immediately using the using a scale factor:
+    void resize(double scaleFactor);
 
     //Animated resize over a given time period.
-    void resizeTransition(T newSize, float timePeriod);
+    void resizeTransition(double scaleFactor, float timePeriod);
 
     //Rotate shape immediately about its centre by the number of degrees specified.
     //I'm assuming we'll be using deg over rad - probably a float either way.

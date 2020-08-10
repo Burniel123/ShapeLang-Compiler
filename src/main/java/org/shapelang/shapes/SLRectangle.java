@@ -8,7 +8,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 import org.shapelang.common.Twople;
 
-public class SLRectangle extends Rectangle implements Shape<Twople<Double,Double>>
+public class SLRectangle extends Rectangle implements Shape
 {
     public SLRectangle(double width, double height)
     {
@@ -16,18 +16,18 @@ public class SLRectangle extends Rectangle implements Shape<Twople<Double,Double
     }
 
     @Override
-    public void resize(Twople<Double, Double> newSize)
+    public void resize(double scaleFactor)
     {
-        setWidth(newSize.fst);
-        setHeight(newSize.snd);
+        setWidth(getWidth() * scaleFactor);
+        setHeight(getHeight() * scaleFactor);
     }
 
     @Override
-    public void resizeTransition(Twople<Double, Double> newSize, float timePeriod)
+    public void resizeTransition(double scaleFactor, float timePeriod)
     {
         ScaleTransition st = new ScaleTransition(Duration.seconds(timePeriod), this);
-        st.setByX(newSize.fst);
-        st.setByY(newSize.snd);
+        st.setByX(scaleFactor);
+        st.setByY(scaleFactor);
         st.play();
     }
 
@@ -41,7 +41,7 @@ public class SLRectangle extends Rectangle implements Shape<Twople<Double,Double
     public void rotateTransition(double degrees, float timePeriod)
     {
         RotateTransition rt = new RotateTransition(Duration.seconds(timePeriod), this);
-        rt.setByAngle(180);
+        rt.setByAngle(degrees);
         rt.play();
     }
 

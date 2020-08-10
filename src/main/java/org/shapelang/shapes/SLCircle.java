@@ -7,7 +7,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
-public class SLCircle extends Circle implements Shape<Double>
+public class SLCircle extends Circle implements Shape
 {
     public SLCircle(double radius)
     {
@@ -15,17 +15,17 @@ public class SLCircle extends Circle implements Shape<Double>
     }
 
     @Override
-    public void resize(Double newSize)
+    public void resize(double scaleFactor)
     {
-        setRadius(newSize);
+        setRadius(getRadius() * scaleFactor);
     }
 
     @Override
-    public void resizeTransition(Double newSize, float timePeriod)
+    public void resizeTransition(double scaleFactor, float timePeriod)
     {
         ScaleTransition st = new ScaleTransition(Duration.seconds(timePeriod), this);
-        st.setByX(newSize);
-        st.setByY(newSize);
+        st.setByX(scaleFactor);
+        st.setByY(scaleFactor);
         st.play();
     }
 
