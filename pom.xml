@@ -31,7 +31,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.1</version>
                 <configuration>
-                    <mainClass>org.shapelang.App</mainClass>
+                    <mainClass>org.shapelang.Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>
