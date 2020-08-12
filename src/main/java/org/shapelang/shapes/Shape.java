@@ -31,4 +31,10 @@ public interface Shape
 
     //Sets or changes the color of a shape.
     void setColor(Color color);
+    
+    // parseSize: String -> Size<T>
+    // pre: for input x. exists Size E String. parseSize(x) = Size
+    // post: state = state0 /\ shape.size = Size
+    // Parses a String containing a representation
+    void parseSize(String size) throws SizeException;
 }
