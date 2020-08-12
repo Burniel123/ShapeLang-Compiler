@@ -7,19 +7,37 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
+/**
+ * A basic circle, defined by its radius and positioned by (x,y) coordinates for its centre.
+ *
+ * @author Daniel Burton
+ */
 public class SLCircle extends Circle implements Shape
 {
+    /**
+     * Standard constructor to create an SLCircle using its radius.
+     * @param radius - the radius of this SLCircle, in pixels.
+     */
     public SLCircle(double radius)
     {
         super(radius);
     }
 
+    /**
+     * Enlarges an existing SLCircle by a provided scale factor (can be <1 for reduction in size).
+     * @param scaleFactor - factor by which the SLCircle should be enlarged.
+     */
     @Override
     public void resize(double scaleFactor)
     {
         setRadius(getRadius() * scaleFactor);
     }
 
+    /**
+     * Animated resize over a given time frame.
+     * @param scaleFactor - factor by which the SLCircle should be enlarged.
+     * @param timePeriod - in seconds, the amount of time the animation should take.
+     */
     @Override
     public void resizeTransition(double scaleFactor, float timePeriod)
     {
@@ -29,12 +47,23 @@ public class SLCircle extends Circle implements Shape
         st.play();
     }
 
+    /**
+     * Rotates an existing SLCircle by a provided degree count.
+     * Although a standard circle looks identical when rotated, this exists to support future
+     * potential options such as patterned/textured shape fills, etc.
+     * @param degrees - number of degrees by which the SLCircle should be rotated.
+     */
     @Override
     public void rotate(double degrees)
     {
         setRotate(degrees);
     }
 
+    /**
+     * Animated rotation over a given time frame.
+     * @param degrees - number of degrees by which the SLCircle should be rotated.
+     * @param timePeriod - in seconds, the amount of time the animation should take.
+     */
     @Override
     public void rotateTransition(double degrees, float timePeriod)
     {
@@ -43,6 +72,12 @@ public class SLCircle extends Circle implements Shape
         rt.play();
     }
 
+    /**
+     * Moves the centre of an existing SLCircle to a given set of coordinates.
+     * Can be used for first-time placement or immediate change of location.
+     * @param x - new x-coordinate for the centre of the SLCircle.
+     * @param y - new y-coordinate for the centre of the SLCircle.
+     */
     @Override
     public void place(int x, int y)
     {
@@ -50,6 +85,12 @@ public class SLCircle extends Circle implements Shape
         setCenterY(y);
     }
 
+    /**
+     * Animated centre relocation over a given time frame.
+     * @param x - new x-coordinate for the centre of the SLCircle.
+     * @param y - new y-coordinate for the centre of the SLCircle.
+     * @param timePeriod - in seconds, the amount of time the animation should take.
+     */
     @Override
     public void moveTransition(int x, int y, float timePeriod)
     {
@@ -59,6 +100,10 @@ public class SLCircle extends Circle implements Shape
         tt.play();
     }
 
+    /**
+     * Changes the color of an existing SLFreeTriangle.
+     * @param color - JavaFX Color to set as the shape's new color.
+     */
     @Override
     public void setColor(Color color)
     {

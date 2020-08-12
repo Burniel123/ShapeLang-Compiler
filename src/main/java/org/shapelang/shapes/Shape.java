@@ -17,14 +17,12 @@ public interface Shape
     void resizeTransition(double scaleFactor, float timePeriod);
 
     //Rotate shape immediately about its centre by the number of degrees specified.
-    //I'm assuming we'll be using deg over rad - probably a float either way.
     void rotate(double degrees);
 
     //Animated rotation over a given time period.
     void rotateTransition(double degrees, float timePeriod);
 
-    //Places the shape on the user-defined grid at (x,y). Can be used for first placement or immediate movement.
-    //Integer coords used as user defines their own grid so if they need more precision that's on them.
+    //Places the shape on the background at coordinates (x,y). Can usually be used for first placement or immediate movement.
     void place(int x, int y);
 
     //Animated movement over a given time period.
