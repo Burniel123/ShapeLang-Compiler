@@ -9,6 +9,7 @@ public enum ParserToken
 	ACTION,
 	SEQ,
 	BLOCK,
+	RESIZE,
 	OTHER,
 }
 
