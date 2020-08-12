@@ -131,11 +131,11 @@ public class Parser
 					curAct = loop;
 					break;
 				case "endloop":
-					cur.next = Optional.of(head); // loops are cyclic 'lists' 
+					cur = Optional.empty();
 					return new Twople(head,count);
 					break;
 				case "endfor":
-					cur.next = Optional.of(head);
+					cur = Optional.empty();
 					return new Twople(head,count);
 					break;
 				case "block":
