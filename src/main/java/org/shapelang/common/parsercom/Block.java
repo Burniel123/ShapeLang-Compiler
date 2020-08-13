@@ -1,3 +1,6 @@
+import org.shapelang.common.parsercom.ParserToken;
+import org.shapelang.common.parsercom.StmtType;
+import org.shapelang.shapes.Shape;
 
 public class Block implements StmtType
 {

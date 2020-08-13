@@ -1,9 +1,14 @@
 package org.shapelang.tokeniser;
 
+import org.shapelang.common.parsercom.StmtType;
+import org.shapelang.common.parsercom.Text;
 import org.shapelang.shapes.Shape;
 import org.shapelang.common.*;
+
+import java.util.Arrays;
 import java.util.Map; // useful if implementation is to be swapped out later
 import java.util.HashMap; // concrete implementation for above
+import java.util.Optional;
 
 // as far as possible, this parser is functional
 // some loops will be found. This is for efficiency reasons
@@ -150,7 +155,7 @@ public class Parser
 					cur = Optional.empty();
 					return new Twople(head,count);
 					break;
-				default: throw new TokeniseException(CMD_ERR+lines[0]);
+				default: throw new com.TokeniseException(CMD_ERR+lines[0]);
 					break;
 			}
 
@@ -168,12 +173,12 @@ public class Parser
 
 	// so called because for map: A -> B, restrictify: A -> C st. C subset B
 	private static StmtType restrictify
-		(Map<String,Shapes> map, String[] line, StmtType x) {
+		(Map<String,Shape> map, String[] line, StmtType x) {
 		switch(line[0]) {
 			case "_":
 				x.shapes = map.values(); // TODO - ensure this casts correctly from collection to array
 				break;
-			default: final String[] idents = Array.copyOfRange(line,1,line.length) 
+			default: final String[] idents = Arrays.copyOfRange(line,1,line.length)
 				x.shapes = getMappings(map, idents);
 				break;
 		}

@@ -1,5 +1,7 @@
 package org.shapelang.common.parsercom;
 
+import org.shapelang.shapes.Shape;
+
 import java.util.Optional;
 
 public class Loop implements StmtType
