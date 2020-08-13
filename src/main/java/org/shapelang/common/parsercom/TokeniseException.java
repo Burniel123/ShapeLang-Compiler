@@ -1,4 +1,6 @@
-class TokeniseException extends Exception
+package org.shapelang.common.parsercom;
+
+public class TokeniseException extends Exception
 {
 	public TokeniseException(String s)
 	{
