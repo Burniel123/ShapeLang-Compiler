@@ -15,8 +15,7 @@ import java.util.Optional;
 
 
 
-public class Parser
-{
+public class Parser {
 
 	private final static String newPara = "*\n*"; // TODO - ensure this works
 	private final static String CANV_INIT_ERR = "Initialise canvas with <size> could not be found.\nPlease ensure this is at the top of the file!";
@@ -32,28 +31,29 @@ public class Parser
 	// post: state = state0 /\ String -> tokens
 	public static CanvasInit tokenise(String toTokenise) throws TokeniseException {
 		final String lc = toTokenise.toLowerCase();
-		final String fst = lc.dropWhileNEQ("initialise");
+		final String fst = dropWhileNEQ(lc, "initialise"); // TODO - check this is fine
 		final String[] lines = fst.split(newPara);
 		final String[] words = wordify(lines[0]);
 
 		switch (words[0]) {
-			case "initialise" : 
+			case "initialise":
 				final CanvasInit ci = new CanvasInit();
 				ci.size = sizeString(words[2]);
-				ci.next = tokenise(Arrays.copyOfRange(lines,1,lines.length)).fst;
+				ci.next = tokenise(Arrays.copyOfRange(lines, 1, lines.length)).fst;
 				return ci;
-				break;
-			default: throw new TokeniseException(CANV_INIT_ERR);
+			break;
+			default:
+				throw new TokeniseException(CANV_INIT_ERR);
 				break;
 		}
 
 		return null; // it shouldn't ever hit this point
 	}
-		
+
 	// when it calls itself for a loop, pos in loop required
-	private static Twople<Text,Integer> tokenise(String[] lines) throws TokeniseException {
+	private static Twople<Text, Integer> tokenise(String[] lines) throws TokeniseException {
 		final Text head = new Text();
-		final Map<String,Shape> idMap = new HashMap();
+		final Map<String, Shape> idMap = new HashMap();
 		// stores mapping from identifiers to objects
 		// only tokenise should add or remove from this (to keep state out of other methods)
 
@@ -61,41 +61,23 @@ public class Parser
 		// current text being parsed
 		int count = 0;
 
-		while(count < lines.length) {
+		while (count < lines.length) {
 			final String[] line = lines[count].split("* *");
 			final StmtType curAct; // current action
 
-			switch(line[0]) {
+			// TODO - find a way of using StmtType to downcast correctly
+			switch (line[0]) {
 				case "put":
-					final Put put = new Put();
-					final Twople<String,Shape> binding 
-						= shapeify(line);
-					idMap.put(binding.fst,binding.snd);
-
-					put.shapeRef = binding.snd;
-					put.shapeSizeParse(line);
-					put.coords = coordinatify(line);
-
-					curAct = Optional.of(null); // TODO - fix all stmttypes
-					curAct = (StmtType) put;
+					final Twople<String, Shape> binding
+							= shapeify(line);
+					idMap.put(binding.fst, binding.snd);
+					curAct = putify(binding.snd, line);
 					break;
 				case "move":
-					final Move mv = new Move();
-					final String ident = line[1];
-					final Optional<Shape> maybeShape
-						= getShape(idMap,ident);
-					
-					if(maybeShape.isPresent()) {
-						mv.shapeRef = maybeShape.get();
-						mv.newCoord = coordinatify(line);
-					}
-					else
-						throw new TokeniseException(NO_INIT_ERR);
-					
-					curAct = mv;
+					curAct = moveify(idMap, line);
 					break;
 				case "resize":
-					curAct = resizeify(idMap,line);
+					curAct = resizeify(idMap, line);
 					break;
 
 				// TODO - how to deal with only certain shapes being allowed in loop
@@ -105,25 +87,25 @@ public class Parser
 
 					loop.numIter = Optional.empty();
 
-					final Twople<Text,Integer> res = 
-						loopify(lines,count); // TODO - how to treat mappings from 'super function'
+					final Twople<Text, Integer> res =
+							loopify(lines, count); // TODO - how to treat mappings from 'super function'
 					loop.contents = res.fst;
 					count = res.snd;
-					
+
 					curAct = loop;
 					break;
 				case "for":
 					final Loop loop = new Loop();
 
 					final int numIter = loopIterify(line);
-					if(0 <= numIter)
+					if (0 <= numIter)
 						loop.numIter = Optional.of(numIter);
 					else
 						throw new TokeniseException(LOOP_OOB_ERR);
 
 
-					final Twople<Text,Integer> res =
-						loopify(lines,count);
+					final Twople<Text, Integer> res =
+							loopify(lines, count);
 					loop.contents = res.fst;
 					count = res.snd;
 
@@ -131,19 +113,20 @@ public class Parser
 					break;
 				case "block":
 					curAct = restrictify
-							(idMap,line,new Block());
+							(idMap, line, new Block());
 					break;
 				case "sequential":
 					curAct = restrictify
-							(idMap,line,new SequentialBlock());
+							(idMap, line, new SequentialBlock());
 					break;
 				case "endloop":
 				case "endfor":
 				case "endsequential":
 					cur = Optional.empty();
-					return new Twople(head,count);
-					break;
-				default: throw new TokeniseException(CMD_ERR+lines[0]);
+					return new Twople(head, count);
+				break;
+				default:
+					throw new TokeniseException(CMD_ERR + lines[0]);
 					break;
 			}
 
@@ -156,7 +139,22 @@ public class Parser
 			count++;
 		}
 
-		return new Twople(head,count);
+		return new Twople(head, count);
+	}
+
+	private static Move moveify(Map<String,Shape> idMap, String[] line) throws TokeniseException {
+		final Move mv = new Move();
+		final String ident = line[1];
+		final Optional<Shape> maybeShape = getShape(idMap, ident);
+
+		if(maybeShape.isPresent()) {
+			mv.shapeRef = maybeShape.get();
+			mv.newCoord = coordinatify(line);
+		}
+		else
+			throw new TokeniseException(NO_INIT_ERR);
+
+		return mv;
 	}
 
 	private static Resize resizeify(Map<String,Shape> map, String[] line) throws TokeniseException {
@@ -208,8 +206,15 @@ public class Parser
 			return Optional.of(value);
 	}
 
+	private static Put putify(Shape shapeRef, String[] line) throws TokeniseException {
+		final Put put = new Put();
+		put.shapeRef = shapeRef;
+		put.coords = coordinatify(line);
+		return put;
+	}
+
 	// maps put line to shape and String identifier
-	// TODO - finish method
+	// TODO - finish method (with other shapes)
 	private static Twople<String,Shape> shapeify(String[] line) throws TokeniseException{
 		boolean shapeFound = false;
 		final Shape shape;
