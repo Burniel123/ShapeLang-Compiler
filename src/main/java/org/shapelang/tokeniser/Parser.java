@@ -1,6 +1,7 @@
 package org.shapelang.tokeniser;
 
 import org.shapelang.common.parsercom.*;
+import org.shapelang.shapes.SLCircle;
 import org.shapelang.shapes.Shape;
 import org.shapelang.common.*;
 
@@ -52,7 +53,8 @@ public class Parser {
 
 
 	// when it calls itself for a loop, pos in loop required
-	private static Twople<Text, Integer> tokenise(String[] lines, Optional<HashMap<String,Shape>> prevHMP) throws TokeniseException {
+	private static Twople<Text, Integer> tokenise(String[] lines, Optional<HashMap<String,Shape>> prevHMP)
+			throws TokeniseException {
 		final Text head = new Text();
 		final Map<String, Shape> idMap = hashMapify(prevHMP);
 		// stores mapping from identifiers to objects
@@ -72,6 +74,7 @@ public class Parser {
 					final Twople<String, Shape> binding
 							= shapeify(line);
 					idMap.put(binding.fst, binding.snd);
+					// this is the only place the hash map should have object added to it
 					curAct = putify(binding.snd, line);
 					break;
 				case "move":
@@ -152,8 +155,7 @@ public class Parser {
 	}
 
 	// so called because for map: A -> B, restrictify: A -> C st. C subset B
-	private static StmtType restrictify
-		(Map<String,Shape> map, String[] line, StmtType x) {
+	private static StmtType restrictify(Map<String,Shape> map, String[] line, StmtType x) {
 		switch(line[0]) {
 			case "_":
 				x.shapes = map.values(); // TODO - ensure this casts correctly from collection to array
@@ -167,7 +169,7 @@ public class Parser {
 	}	
 
 	private static <K,V> V[] getMappings(Map<K,V> map, K[] keys) {
-		final V[] values = new Array[keys.length];
+		final V[] values = (V[])new Object[keys.length]; // I hate this, type erasure is a sin
 		for(int i = 0; i < keys.length; i++) { // not iterator cos i needed for key and values
 			final K key = keys[i];
 			values[i] = map.get(key);
@@ -197,7 +199,7 @@ public class Parser {
 		final Shape shape;
 		for(String word: line) {
 			switch(word) {
-				case "circle": shape = new Circle();
+				case "circle": shape = new SLCircle(5);
 					shapeFound = true;
 					break;
 				default: 
@@ -239,7 +241,7 @@ public class Parser {
 
 	private static Twople<Loop, Integer> loopify(String[] lines, int count) throws TokeniseException {
 		final Loop loop = new Loop();
-		final String[] words = lines[count].split("* *");
+		final String[] words = wordify(lines[count]);
 
 		switch(words[0]) {
 			case("for"):
@@ -256,7 +258,7 @@ public class Parser {
 	}
 
 	private static String[] wordify(String line){
-		return line.splitAt(" ");
+		return line.split("* *");
 	}
 
 	private static Twople<Integer,Integer> sizeString(String tuple) {
@@ -290,12 +292,10 @@ public class Parser {
 		return new Twople(fst,snd);
 	}
 
-	private static String dropWhileNEQ(String toDrop, String eq)
-	{
+	private static String dropWhileNEQ(String toDrop, String eq) {
 		int count = 0;
 		
-		while(toDrop.length() - eq.length() > count && 
-			eq != toDrop.substring(count,count+eq.length()))
+		while(toDrop.length() - eq.length() > count && eq.equals(toDrop.substring(count,count+eq.length())));
 				count++;
 
 		return toDrop.substring(count);
