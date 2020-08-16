@@ -84,35 +84,11 @@ public class Parser {
 				// TODO - how to deal with only certain shapes being allowed in loop
 				// TODO - refactor this and for into aux function
 				case "loop":
-					final Loop loop = new Loop();
-
-					loop.numIter = Optional.empty();
-
-					final Twople<Text, Integer> res =
-							loopify(lines, count); // TODO - how to treat mappings from 'super function'
-					loop.contents = res.fst;
-					count = res.snd;
-
-					curAct = loop;
-					break;
 				case "for":
-					final Loop loop = new Loop();
-
-					final int numIter = loopIterify(line);
-					if (0 <= numIter)
-						loop.numIter = Optional.of(numIter);
-					else
-						throw new TokeniseException(LOOP_OOB_ERR);
-
-
-					final Twople<Text, Integer> res =
-							loopify(lines, count);
-					loop.contents = res.fst;
-					count = res.snd;
-
-					curAct = loop;
+					final Twople<Loop,Integer> loopRes = loopify(lines,count);
+					curAct = loopRes.fst;
+					count = loopRes.snd;
 					break;
-					curAct = loopify(lines,count);
 				case "block":
 					curAct = restrictify
 							(idMap, line, new Block());
@@ -261,7 +237,7 @@ public class Parser {
 		throw new TokeniseException(LOOP_BOUND_ERR);
 	}
 
-	private static Twople<Loop, Integer> loopifyTwo(String[] lines, int count) throws TokeniseException {
+	private static Twople<Loop, Integer> loopify(String[] lines, int count) throws TokeniseException {
 		final Loop loop = new Loop();
 		final String[] words = lines[count].split("* *");
 
@@ -277,13 +253,6 @@ public class Parser {
 		final Twople<Text,Integer> inner = tokenise(lines.copyOfRange(lines, count+1, lines.length));
 		loop.contents = inner.fst;
 		return new Twople(loop,inner.snd);
-	}
-
-	private static Twople<Text,Integer> loopify(String[] lines, int count) {
-
-
-		return tokenise(lines.copyOfRange
-				(lines, count+1, lines.length));
 	}
 
 	private static String[] wordify(String line){
