@@ -11,12 +11,11 @@ import java.util.Optional;
 
 // as far as possible, this parser is functional
 // some loops will be found. This is for efficiency reasons
-// this could be done entirely functionally, but this would involve recursion
+// this could be done entirely functionally, but this would involve (more) recursion
 
 
 
 public class Parser {
-
 	private final static String newPara = "*\n*"; // TODO - ensure this works
 	private final static String CANV_INIT_ERR = "Initialise canvas with <size> could not be found.\nPlease ensure this is at the top of the file!";
 	private final static String CMD_ERR = "Error deciphering following text: ";
@@ -39,7 +38,7 @@ public class Parser {
 			case "initialise":
 				final CanvasInit ci = new CanvasInit();
 				ci.size = sizeString(words[2]);
-				ci.next = tokenise(Arrays.copyOfRange(lines, 1, lines.length)).fst;
+				ci.next = tokenise(Arrays.copyOfRange(lines, 1, lines.length),Optional.empty()).fst;
 				return ci;
 			break;
 			default:
@@ -50,10 +49,12 @@ public class Parser {
 		return null; // it shouldn't ever hit this point
 	}
 
+
+
 	// when it calls itself for a loop, pos in loop required
-	private static Twople<Text, Integer> tokenise(String[] lines) throws TokeniseException {
+	private static Twople<Text, Integer> tokenise(String[] lines, Optional<HashMap<String,Shape>> prevHMP) throws TokeniseException {
 		final Text head = new Text();
-		final Map<String, Shape> idMap = new HashMap();
+		final Map<String, Shape> idMap = hashMapify(prevHMP);
 		// stores mapping from identifiers to objects
 		// only tokenise should add or remove from this (to keep state out of other methods)
 
@@ -111,6 +112,7 @@ public class Parser {
 
 					curAct = loop;
 					break;
+					curAct = loopify(lines,count);
 				case "block":
 					curAct = restrictify
 							(idMap, line, new Block());
@@ -198,8 +200,7 @@ public class Parser {
 	}
 
 	private static <K,V> Optional<V> getShape(Map<K,V> map, K key) {
-		final V value 
-			= map.getOrDefault(key, null); // careful with npe
+		final V value = map.getOrDefault(key, null); // careful with npe
 		if(null == value)
 			return Optional.empty();
 		else
@@ -226,6 +227,8 @@ public class Parser {
 				default: 
 					if(shapeFound)
 						return new Twople(word,shape);
+					else
+						throw new TokeniseException(PUT_SYN_ERR);
 					break;
 			}
 		}
@@ -258,7 +261,27 @@ public class Parser {
 		throw new TokeniseException(LOOP_BOUND_ERR);
 	}
 
-	private static Twople<Text,Integer> loopify(String[] lines, int count) { // TODO - refactor so recursion not necessary
+	private static Twople<Loop, Integer> loopifyTwo(String[] lines, int count) throws TokeniseException {
+		final Loop loop = new Loop();
+		final String[] words = lines[count].split("* *");
+
+		switch(words[0]) {
+			case("for"):
+				loop.numIter = Optional.of(loopIterify(words));
+				break;
+			case("loop"):
+				loop.numIter = Optional.empty();
+				break;
+		}
+
+		final Twople<Text,Integer> inner = tokenise(lines.copyOfRange(lines, count+1, lines.length));
+		loop.contents = inner.fst;
+		return new Twople(loop,inner.snd);
+	}
+
+	private static Twople<Text,Integer> loopify(String[] lines, int count) {
+
+
 		return tokenise(lines.copyOfRange
 				(lines, count+1, lines.length));
 	}
@@ -299,7 +322,7 @@ public class Parser {
 	}
 
 	private static String dropWhileNEQ(String toDrop, String eq)
-	{ // TODO - investigate if built in method exists
+	{
 		int count = 0;
 		
 		while(toDrop.length() - eq.length() > count && 
@@ -307,5 +330,9 @@ public class Parser {
 				count++;
 
 		return toDrop.substring(count);
+	}
+
+	private static HashMap<String,Shape> hashMapify(Optional<HashMap<String,Shape>> prev) {
+		return prev.orElse(new HashMap<String,Shape>);
 	}
 }
