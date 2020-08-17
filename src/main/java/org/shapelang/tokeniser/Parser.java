@@ -170,6 +170,7 @@ public class Parser {
 
 	private static <K,V> V[] getMappings(Map<K,V> map, K[] keys) {
 		final V[] values = (V[])new Object[keys.length]; // I hate this, type erasure is a sin
+		// TODO - I have a funny feeling this cast won't work due to _type erasure_, but make sure it behaves
 		for(int i = 0; i < keys.length; i++) { // not iterator cos i needed for key and values
 			final K key = keys[i];
 			values[i] = map.get(key);
@@ -192,23 +193,23 @@ public class Parser {
 		return put;
 	}
 
-	// maps put line to shape and String identifier
-	// TODO - finish method (with other shapes)
-	private static Twople<String,Shape> shapeify(String[] line) throws TokeniseException{
-		boolean shapeFound = false;
+	// maps line -> (id -> ShapeRef) st. line = "Put ":shapeRef:id:shapeInfo
+	private static Twople<String,Shape> shapeify(String[] line) throws TokeniseException {
 		final Shape shape;
-		for(String word: line) {
-			switch(word) {
-				case "circle": shape = new SLCircle(5);
-					shapeFound = true;
+
+		if("put".equals(line[0])) {
+			switch(line[1]) {
+				case "circle":
+					shape = SLCircle.parseSize(line);
 					break;
-				default: 
-					if(shapeFound)
-						return new Twople(word,shape);
-					else
-						throw new TokeniseException(PUT_SYN_ERR);
+				default:
+					throw new TokeniseException(PUT_SYN_ERR);
 					break;
 			}
+			final Twople<Integer,Integer> initialPlace = coordinatify(line);
+			shape.place(initialPlace.fst,initialPlace.snd);
+
+			return new Twople(line[2],shape);
 		}
 
 		throw new TokeniseException(PUT_SYN_ERR);
@@ -218,7 +219,8 @@ public class Parser {
 		boolean next = false;
 		for(String word: line) {
 			if(!next)
-				next = word.equals("to");
+				next = word.equals("to") || word.equals("at");
+			// TODO - ascertain at does not adversely affect syntax in any way
 			else
 				return sizeString(word);
 		}
@@ -252,7 +254,7 @@ public class Parser {
 				break;
 		}
 
-		final Twople<Text,Integer> inner = tokenise(lines.copyOfRange(lines, count+1, lines.length));
+		final Twople<Text,Integer> inner = tokenise(); // TODO - figure out params for tokenise
 		loop.contents = inner.fst;
 		return new Twople(loop,inner.snd);
 	}
