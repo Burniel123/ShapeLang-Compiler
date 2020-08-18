@@ -125,22 +125,20 @@ public class Parser {
 	}
 
 	private static Move moveify(Map<String,Shape> idMap, String[] line) throws TokeniseException {
-		final Move mv = new Move();
 		final String ident = line[1];
 		final Optional<Shape> maybeShape = getShape(idMap, ident);
 
 		if(maybeShape.isPresent()) {
-			mv.shapeRef = maybeShape.get();
-			mv.newCoord = coordinatify(line);
+			final Shape shapeRef = maybeShape.get();
+			final Twople<Integer,Integer> coord = coordinatify(line);
+			return new Move(shapeRef, coord);
 		}
 		else
 			throw new TokeniseException(NO_INIT_ERR);
 
-		return mv;
 	}
 
 	private static Resize resizeify(Map<String,Shape> map, String[] line) throws TokeniseException {
-		final Resize rsz = new Resize();
 		final String ident = line[1];
 		final Optional<Shape> maybeShape
 				= getShape(map,ident);

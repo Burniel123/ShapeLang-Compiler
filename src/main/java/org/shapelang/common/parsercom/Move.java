@@ -11,6 +11,11 @@ public class Move implements StmtType
 		return ParserToken.MOVE;
 	}
 
+	public Move(Shape shapeRef, Twople<Integer,Integer> coord) {
+		this.shapeRef = shapeRef;
+		this.coord = coord;
+	}
+
 	public final Shape shapeRef;
-	public final Twople<Integer,Integer> newCoord;
+	public final Twople<Integer,Integer> coord;
 }
