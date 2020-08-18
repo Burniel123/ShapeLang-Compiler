@@ -10,8 +10,9 @@ public class Put implements StmtType
 		return ParserToken.PUT;
 	}
 
-	public void shapeSizeParse(String[] words) {
-		shapeRef.shapeSizeParse(words);
+	public Put(Shape shapeRef, Twople<Integer,Integer> coords) {
+		this.shapeRef = shapeRef;
+		this.coords = coords;
 	}
 
 	public final Shape shapeRef;	

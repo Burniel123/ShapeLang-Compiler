@@ -211,10 +211,8 @@ public class Parser {
 	}
 
 	private static Put putify(Shape shapeRef, String[] line) throws TokeniseException {
-		final Put put = new Put();
-		put.shapeRef = shapeRef;
-		put.coords = coordinatify(line);
-		return put;
+		Twople<Integer,Integer> coords = coordinatify(line);
+		return new Put(shapeRef,coords);
 	}
 
 	// maps line -> (id -> ShapeRef) st. line = "Put ":shapeRef:id:shapeInfo
@@ -280,7 +278,7 @@ public class Parser {
 				throw new TokeniseException(LOOP_SYN_ERR);
 		}
 
-		final String[] keys = restrictify(map,lines[0]);
+		final String[] keys = restrictify(map,lines);
 		final Shape[] shapes = getMappings(map,keys);
 		final Twople<Text,Integer> inner = tokenise(lines,Optional.of(map)); // TODO - figure out params for tokenise
 		final Loop loop = new Loop(numIter,shapes,inner.fst);
