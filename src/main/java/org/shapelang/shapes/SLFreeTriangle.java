@@ -104,7 +104,15 @@ public class SLFreeTriangle extends Polygon implements Shape
         tt.setToY(y - centreY);
         tt.play();
 
-        tt.setOnFinished(e -> points = (Double[])getPoints().toArray());
+        tt.setOnFinished(e ->
+        {
+            Double[] newPoints = new Double[6];
+            for(int i = 0; i < 6; i++)
+            {
+                newPoints[i] = (Double)getPoints().get(i);
+            }
+            points = newPoints;
+        });
     }
 
     /**
@@ -135,6 +143,16 @@ public class SLFreeTriangle extends Polygon implements Shape
         tt.setToX(x - centreX);
         tt.setToY(y - centreY);
         tt.play();
+
+        tt.setOnFinished(e ->
+        {
+            Double[] newPoints = new Double[6];
+            for(int i = 0; i < 6; i++)
+            {
+                newPoints[i] = (Double)getPoints().get(i);
+            }
+            points = newPoints;
+        });
     }
 
     /**
