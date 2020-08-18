@@ -25,6 +25,7 @@ public class Parser {
 	private final static String COORD_OOB_ERR = "Error with the co-ordinates of a shape.\nCheck your shapes have coordinates in form (x,y)";
 	private final static String PUT_SYN_ERR = "Error with syntax of Put statement.\nCheck your Put statements are all correct";
 	private final static String NO_INIT_ERR = "No shape with that identifier was found.\nCheck you've initialised that shape.";
+	private final static String RSZ_FAC_ERR = "No factor keyword found\nCheck you've correctly resized your shape";
 
 	// maps a string to a tokenised representation of the text
 	// pre: null != toTokenise
@@ -37,10 +38,9 @@ public class Parser {
 
 		switch (words[0]) {
 			case "initialise":
-				final CanvasInit ci = new CanvasInit();
-				ci.size = sizeString(words[2]);
-				ci.next = tokenise(Arrays.copyOfRange(lines, 1, lines.length),Optional.empty()).fst;
-				return ci;
+				final Twople<Integer,Integer> size = sizeString(words[2]);
+				final Text next = tokenise(Arrays.copyOfRange(lines, 1, lines.length),Optional.empty()).fst;
+				return new CanvasInit(size,next);
 			break;
 			default:
 				throw new TokeniseException(CANV_INIT_ERR);
@@ -145,13 +145,30 @@ public class Parser {
 				= getShape(map,ident);
 
 		if(maybeShape.isPresent()) {
-			rsz.shapeRef = maybeShape.get();
-			rsz.size = coordinatify(line);
+			final Shape shapeRef = maybeShape.get();
+			final double size = getResize(line);
+			return new Resize(shapeRef, size);
 		}
 		else
 			throw new TokeniseException(NO_INIT_ERR);
+	}
 
-		return rsz;
+	private static double getResize(String[] line) throws TokeniseException {
+		boolean isNext = false;
+		for(String word: line) {
+			if(!isNext)
+				switch(word) {
+					case "factor":
+						isNext = true;
+						break;
+					default:
+						break;
+				}
+			else
+				return Double.parseDouble(word);
+		}
+
+		throw new TokeniseException(RSZ_FAC_ERR);
 	}
 
 	// so called because for map: A -> B, restrictify: A -> C st. C subset B
@@ -304,6 +321,6 @@ public class Parser {
 	}
 
 	private static HashMap<String,Shape> hashMapify(Optional<HashMap<String,Shape>> prev) {
-		return prev.orElse(new HashMap<String,Shape>);
+		return prev.orElse(new HashMap<String,Shape>());
 	}
 }

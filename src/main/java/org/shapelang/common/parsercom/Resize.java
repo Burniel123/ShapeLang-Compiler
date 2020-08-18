@@ -10,6 +10,11 @@ public class Resize implements StmtType
 		return ParserToken.RESIZE;
 	}
 
+	public Resize(Shape shapeRef, double factor) {
+		this.shapeRef = shapeRef;
+		this.factor = factor;
+	}
+
 	public final Shape shapeRef;
-	public final Twople<Integer,Integer> size;
+	public final double factor;
 }
