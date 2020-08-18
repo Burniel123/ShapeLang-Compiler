@@ -21,6 +21,7 @@ public class Parser {
 	private final static String CANV_INIT_ERR = "Initialise canvas with <size> could not be found.\nPlease ensure this is at the top of the file!";
 	private final static String CMD_ERR = "Error deciphering following text: ";
 	private final static String LOOP_OOB_ERR = "Error with number in for loop.\nCheck your for loops have valid numbers";
+	private final static String LOOP_SYN_ERR = "Error with loop syntax (no loop keyword found)\nYou shouldn't see this, raise an issue on the github page please :)";
 	private final static String LOOP_BOUND_ERR = "Error find loop bounds.\nCheck you have input valid bounds for all loops";
 	private final static String COORD_OOB_ERR = "Error with the co-ordinates of a shape.\nCheck your shapes have coordinates in form (x,y)";
 	private final static String PUT_SYN_ERR = "Error with syntax of Put statement.\nCheck your Put statements are all correct";
@@ -53,10 +54,10 @@ public class Parser {
 
 
 	// when it calls itself for a loop, pos in loop required
-	private static Twople<Text, Integer> tokenise(String[] lines, Optional<HashMap<String,Shape>> prevHMP)
+	private static Twople<Text, Integer> tokenise(String[] lines, Optional<Map<String,Shape>> prevMap)
 			throws TokeniseException {
 		final Text head = new Text();
-		final Map<String, Shape> idMap = hashMapify(prevHMP);
+		final Map<String, Shape> idMap = mapify(prevMap);
 		// stores mapping from identifiers to objects
 		// only tokenise should add or remove from this (to keep state out of other methods)
 
@@ -88,7 +89,7 @@ public class Parser {
 				// TODO - refactor this and for into aux function
 				case "loop":
 				case "for":
-					final Twople<Loop,Integer> loopRes = loopify(lines,count);
+					final Twople<Loop,Integer> loopRes = loopify(lines,count,idMap);
 					curAct = loopRes.fst;
 					count = loopRes.snd;
 					break;
@@ -172,18 +173,24 @@ public class Parser {
 	}
 
 	// so called because for map: A -> B, restrictify: A -> C st. C subset B
-	private static StmtType restrictify(Map<String,Shape> map, String[] line, StmtType x) {
+	private static Shape[] restrictify(Map<String,Shape> map, String[] line) {
+		final Shape[] shapes;
 		switch(line[0]) {
 			case "_":
-				x.shapes = map.values(); // TODO - ensure this casts correctly from collection to array
+				shapes = getAllMappings(map);
 				break;
-			default: final String[] idents = Arrays.copyOfRange(line,1,line.length)
-				x.shapes = getMappings(map, idents);
+			default: final
+				String[] idents = Arrays.copyOfRange(line,1,line.length);
+				shapes = getMappings(map, idents);
 				break;
 		}
-		return x;
+		return shapes;
+	}
 
-	}	
+	private static <K,V> V[] getAllMappings(Map<K,V> map) {
+		return (V[]) map.values().toArray(new Object[0]);
+		// TODO - see type erasure TODO
+	}
 
 	private static <K,V> V[] getMappings(Map<K,V> map, K[] keys) {
 		final V[] values = (V[])new Object[keys.length]; // I hate this, type erasure is a sin
@@ -258,21 +265,25 @@ public class Parser {
 		throw new TokeniseException(LOOP_BOUND_ERR);
 	}
 
-	private static Twople<Loop, Integer> loopify(String[] lines, int count) throws TokeniseException {
-		final Loop loop = new Loop();
+	private static Twople<Loop, Integer> loopify(String[] lines, int count, Map<String,Shape> map) throws TokeniseException {
 		final String[] words = wordify(lines[count]);
+		final Optional<Integer> numIter;
 
 		switch(words[0]) {
 			case("for"):
-				loop.numIter = Optional.of(loopIterify(words));
+				numIter = Optional.of(loopIterify(words));
 				break;
 			case("loop"):
-				loop.numIter = Optional.empty();
+				numIter = Optional.empty();
 				break;
+			default:
+				throw new TokeniseException(LOOP_SYN_ERR);
 		}
 
-		final Twople<Text,Integer> inner = tokenise(); // TODO - figure out params for tokenise
-		loop.contents = inner.fst;
+		final String[] keys = restrictify(map,lines[0]);
+		final Shape[] shapes = getMappings(map,keys);
+		final Twople<Text,Integer> inner = tokenise(lines,Optional.of(map)); // TODO - figure out params for tokenise
+		final Loop loop = new Loop(numIter,shapes,inner.fst);
 		return new Twople(loop,inner.snd);
 	}
 
@@ -320,7 +331,7 @@ public class Parser {
 		return toDrop.substring(count);
 	}
 
-	private static HashMap<String,Shape> hashMapify(Optional<HashMap<String,Shape>> prev) {
+	private static Map<String,Shape> mapify(Optional<Map<String,Shape>> prev) {
 		return prev.orElse(new HashMap<String,Shape>());
 	}
 }
