@@ -11,5 +11,9 @@ public class Block implements StmtType
 		return ParserToken.BLOCK;
 	}
 
+	public Block(Shape[] shapes) {
+		this.shapes = shapes;
+	}
+
 	public final Shape[] shapes;
 }
