@@ -17,7 +17,7 @@ import java.util.Optional;
 
 
 public class Parser {
-	private final static String newPara = "*\n*"; // TODO - ensure this works
+	private final static String newPara = "\\*\n*"; // TODO - ensure this works
 	private final static String CANV_INIT_ERR = "Initialise canvas with <size> could not be found.\nPlease ensure this is at the top of the file!";
 	private final static String CMD_ERR = "Error deciphering following text: ";
 	private final static String LOOP_OOB_ERR = "Error with number in for loop.\nCheck your for loops have valid numbers";
@@ -34,7 +34,7 @@ public class Parser {
 	public static CanvasInit tokenise(String toTokenise) throws TokeniseException {
 		final String lc = toTokenise.toLowerCase();
 		final String fst = dropWhileNEQ(lc, "initialise"); // TODO - check this is fine
-		final String[] lines = fst.split(newPara);
+		final String[] lines = lineify(fst);
 		final String[] words = wordify(lines[0]);
 
 		switch (words[0]) {
@@ -109,10 +109,13 @@ public class Parser {
 					break;
 			}
 
-			cur.stmt = curAct;
+			final Text unwrappedText = cur.get();
+			// if it's reached this point, it shouldn't be nothing (as it shouldn't be end of loop)
+
+			unwrappedText.stmt = curAct;
 
 			// move onto next line
-			final Text nxt = new Text();
+			final Text nxt = new Text(curAct);
 			cur.next = Optional.of(nxt);
 			cur = Optional.of(nxt);
 			count++;
@@ -288,11 +291,14 @@ public class Parser {
 		final Shape[] shapes = getShapeRefs(map,words);
 		final Twople<Text,Integer> inner = tokenise(lines,Optional.of(map)); // TODO - figure out params for tokenise
 		final Loop loop = new Loop(numIter,shapes,inner.fst);
-		return new Twople(loop,inner.snd);
+		return new Twople<>(loop,inner.snd);
 	}
 
 	private static String[] wordify(String line){
-		return line.split("* *");
+		return line.split("\\* *");
+	}
+	private static String[] lineify(String text) {
+		return text.split(newPara);
 	}
 
 	private static Twople<Integer,Integer> sizeString(String tuple) {
@@ -328,13 +334,13 @@ public class Parser {
 	private static String dropWhileNEQ(String toDrop, String eq) {
 		int count = 0;
 		
-		while(toDrop.length() - eq.length() > count && eq.equals(toDrop.substring(count,count+eq.length())));
-				count++;
+		while(toDrop.length() - eq.length() > count && eq.equals(toDrop.substring(count,count+eq.length())))
+			count++;
 
 		return toDrop.substring(count);
 	}
 
 	private static Map<String,Shape> mapify(Optional<Map<String,Shape>> prev) {
-		return prev.orElse(new HashMap<String,Shape>());
+		return prev.orElse(new HashMap<>());
 	}
 }
