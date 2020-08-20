@@ -62,7 +62,7 @@ public class Parser {
 		int count = 0;
 
 		while (count < lines.length) {
-			final String[] line = lines[count].split("* *");
+			final String[] line = wordify(lines[count]);
 			final StmtType curAct; // current action
 
 			// TODO - find a way of using StmtType to downcast correctly
@@ -180,6 +180,7 @@ public class Parser {
 	}
 
 	// gets references of shapes
+	// originally restrictify
 	private static Shape[] getShapeRefs(Map<String,Shape> map, String[] line) {
 		final Shape[] shapes;
 		switch(line[0]) {
@@ -284,8 +285,7 @@ public class Parser {
 				throw new TokeniseException(LOOP_SYN_ERR);
 		}
 
-		final String[] keys = restrictify(map,lines);
-		final Shape[] shapes = getMappings(map,keys);
+		final Shape[] shapes = getShapeRefs(map,words);
 		final Twople<Text,Integer> inner = tokenise(lines,Optional.of(map)); // TODO - figure out params for tokenise
 		final Loop loop = new Loop(numIter,shapes,inner.fst);
 		return new Twople(loop,inner.snd);
@@ -297,7 +297,6 @@ public class Parser {
 
 	private static Twople<Integer,Integer> sizeString(String tuple) {
 		// specific format: [some stuff]"("[num1],[num2]")"[some stuff] -> ([num],[num])
-		
 		final int fst;
 		final int snd;
 		int pos = 0;
