@@ -42,13 +42,9 @@ public class Parser {
 				final Twople<Integer,Integer> size = sizeString(words[2]);
 				final Text next = tokenise(Arrays.copyOfRange(lines, 1, lines.length),Optional.empty()).fst;
 				return new CanvasInit(size,next);
-			break;
 			default:
 				throw new TokeniseException(CANV_INIT_ERR);
-				break;
 		}
-
-		return null; // it shouldn't ever hit this point
 	}
 
 
@@ -94,12 +90,10 @@ public class Parser {
 					count = loopRes.snd;
 					break;
 				case "block":
-					curAct = restrictify
-							(idMap, line, new Block());
+					curAct = blockify(idMap,line);
 					break;
 				case "sequential":
-					curAct = restrictify
-							(idMap, line, new SequentialBlock());
+					curAct = restrictify(idMap, line, new SequentialBlock());
 					break;
 				case "endloop":
 				case "endfor":
@@ -170,8 +164,13 @@ public class Parser {
 		throw new TokeniseException(RSZ_FAC_ERR);
 	}
 
-	// so called because for map: A -> B, restrictify: A -> C st. C subset B
-	private static Shape[] restrictify(Map<String,Shape> map, String[] line) {
+	private static Block blockify(Map<String,Shape> map, String[] line) {
+		final Shape[] shapes = getShapeRefs(map,line);
+		return new Block(shapes);
+	}
+
+	// gets references of shapes
+	private static Shape[] getShapeRefs(Map<String,Shape> map, String[] line) {
 		final Shape[] shapes;
 		switch(line[0]) {
 			case "_":
@@ -209,7 +208,7 @@ public class Parser {
 	}
 
 	private static Put putify(Shape shapeRef, String[] line) throws TokeniseException {
-		Twople<Integer,Integer> coords = coordinatify(line);
+		final Twople<Integer,Integer> coords = coordinatify(line);
 		return new Put(shapeRef,coords);
 	}
 
@@ -224,7 +223,6 @@ public class Parser {
 					break;
 				default:
 					throw new TokeniseException(PUT_SYN_ERR);
-					break;
 			}
 			final Twople<Integer,Integer> initialPlace = coordinatify(line);
 			shape.place(initialPlace.fst,initialPlace.snd);
