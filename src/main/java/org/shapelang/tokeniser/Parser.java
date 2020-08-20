@@ -93,7 +93,10 @@ public class Parser {
 					curAct = blockify(idMap,line);
 					break;
 				case "sequential":
-					curAct = restrictify(idMap, line, new SequentialBlock());
+					final Twople<Sequential,Integer> seqRes =
+							sequentialify(idMap,line, Arrays.copyOfRange(lines,count+1,lines.length));
+					curAct = seqRes.fst;
+					count = seqRes.snd;
 					break;
 				case "endloop":
 				case "endfor":
@@ -162,6 +165,13 @@ public class Parser {
 		}
 
 		throw new TokeniseException(RSZ_FAC_ERR);
+	}
+
+	private static Twople<Sequential,Integer> sequentialify(Map<String,Shape> map, String[] currentLine, String[] text) throws TokeniseException {
+		final Shape[] allowedShapes = getShapeRefs(map, currentLine);
+		final Twople<Text,Integer> inner = tokenise(text,Optional.of(map));
+		final Sequential seq = new Sequential(allowedShapes,inner.fst);
+		return new Twople(seq,inner.snd);
 	}
 
 	private static Block blockify(Map<String,Shape> map, String[] line) {
