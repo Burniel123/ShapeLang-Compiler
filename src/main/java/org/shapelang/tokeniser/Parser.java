@@ -27,6 +27,7 @@ public class Parser {
 	private final static String PUT_SYN_ERR = "Error with syntax of Put statement.\nCheck your Put statements are all correct";
 	private final static String NO_INIT_ERR = "No shape with that identifier was found.\nCheck you've initialised that shape.";
 	private final static String RSZ_FAC_ERR = "No factor keyword found\nCheck you've correctly resized your shape";
+	private final static String INDENT_PUT_ERR = "Cannot instantiate shape there\nPlease move your shape instantiation elsewhere";
 
 	// maps a string to a tokenised representation of the text
 	// pre: null != toTokenise
@@ -47,13 +48,13 @@ public class Parser {
 		}
 	}
 
-
-
-	// when it calls itself for a loop, pos in loop required
 	private static Twople<Text, Integer> tokenise(String[] lines, Optional<Map<String,Shape>> prevMap)
 			throws TokeniseException {
-		final Text head = new Text();
-		final Map<String, Shape> idMap = mapify(prevMap);
+		final Text head = new Text(null); // exclusively head.next should be returned
+		// do not return head directly under any circumstance
+		final Twople<Map<String,Shape>,Boolean> mapCreation = mapify(prevMap);
+		final Map<String, Shape> idMap = mapCreation.fst;
+		final boolean canInstantiate = mapCreation.snd;
 		// stores mapping from identifiers to objects
 		// only tokenise should add or remove from this (to keep state out of other methods)
 
@@ -61,6 +62,7 @@ public class Parser {
 		// current text being parsed
 		int count = 0;
 
+		// pre: remove blank lines from lines
 		while (count < lines.length) {
 			final String[] line = wordify(lines[count]);
 			final StmtType curAct; // current action
@@ -68,8 +70,7 @@ public class Parser {
 			// TODO - find a way of using StmtType to downcast correctly
 			switch (line[0]) {
 				case "put":
-					final Twople<String, Shape> binding
-							= shapeify(line);
+					final Twople<String, Shape> binding = shapeify(line);
 					idMap.put(binding.fst, binding.snd);
 					// this is the only place the hash map should have object added to it
 					curAct = putify(binding.snd, line);
@@ -85,9 +86,13 @@ public class Parser {
 				// TODO - refactor this and for into aux function
 				case "loop":
 				case "for":
-					final Twople<Loop,Integer> loopRes = loopify(lines,count,idMap);
-					curAct = loopRes.fst;
-					count = loopRes.snd;
+					if(canInstantiate) {
+						final Twople<Loop, Integer> loopRes = loopify(lines, count, idMap);
+						curAct = loopRes.fst;
+						count = loopRes.snd;
+					}
+					else
+						throw new TokeniseException(INDENT_PUT_ERR);
 					break;
 				case "block":
 					curAct = blockify(idMap,line);
@@ -103,25 +108,24 @@ public class Parser {
 				case "endsequential":
 					cur = Optional.empty();
 					return new Twople(head, count);
-				break;
 				default:
 					throw new TokeniseException(CMD_ERR + lines[0]);
-					break;
 			}
 
 			final Text unwrappedText = cur.get();
 			// if it's reached this point, it shouldn't be nothing (as it shouldn't be end of loop)
 
-			unwrappedText.stmt = curAct;
+			final Text next = new Text(curAct);
+
 
 			// move onto next line
 			final Text nxt = new Text(curAct);
-			cur.next = Optional.of(nxt);
+			unwrappedText.setNext(Optional.of(nxt));
 			cur = Optional.of(nxt);
 			count++;
 		}
 
-		return new Twople(head, count);
+		return new Twople(head.getNext(), count);
 	}
 
 	private static Move moveify(Map<String,Shape> idMap, String[] line) throws TokeniseException {
@@ -340,7 +344,7 @@ public class Parser {
 		return toDrop.substring(count);
 	}
 
-	private static Map<String,Shape> mapify(Optional<Map<String,Shape>> prev) {
-		return prev.orElse(new HashMap<>());
+	private static Twople<Map<String,Shape>,Boolean> mapify(Optional<Map<String,Shape>> prev) {
+		return new Twople<>(prev.orElse(new HashMap<>()),prev.isEmpty());
 	}
 }
