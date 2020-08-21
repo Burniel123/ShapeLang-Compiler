@@ -107,16 +107,15 @@ public class Parser {
 				case "endfor":
 				case "endsequential":
 					cur = Optional.empty();
-					return new Twople(head, count);
+					return new Twople<>(head, count);
 				default:
 					throw new TokeniseException(CMD_ERR + lines[0]);
 			}
 
+			// TODO - I think there's a bug here concerning the 'linking' of the Text 'list'
+
 			final Text unwrappedText = cur.get();
 			// if it's reached this point, it shouldn't be nothing (as it shouldn't be end of loop)
-
-			final Text next = new Text(curAct);
-
 
 			// move onto next line
 			final Text nxt = new Text(curAct);
@@ -125,7 +124,7 @@ public class Parser {
 			count++;
 		}
 
-		return new Twople(head.getNext(), count);
+		return new Twople<>(head.getNext().get(), count);
 	}
 
 	private static Move moveify(Map<String,Shape> idMap, String[] line) throws TokeniseException {
@@ -167,8 +166,14 @@ public class Parser {
 					default:
 						break;
 				}
-			else
-				return Double.parseDouble(word);
+			else {
+				final double newSize = Double.parseDouble(word);
+				if(0 < newSize)
+					return newSize;
+				else
+					throw new TokeniseException(LOOP_OOB_ERR);
+			}
+
 		}
 
 		throw new TokeniseException(RSZ_FAC_ERR);
@@ -178,7 +183,7 @@ public class Parser {
 		final Shape[] allowedShapes = getShapeRefs(map, currentLine);
 		final Twople<Text,Integer> inner = tokenise(text,Optional.of(map));
 		final Sequential seq = new Sequential(allowedShapes,inner.fst);
-		return new Twople(seq,inner.snd);
+		return new Twople<>(seq,inner.snd);
 	}
 
 	private static Block blockify(Map<String,Shape> map, String[] line) {
@@ -245,7 +250,7 @@ public class Parser {
 			final Twople<Integer,Integer> initialPlace = coordinatify(line);
 			shape.place(initialPlace.fst,initialPlace.snd);
 
-			return new Twople(line[2],shape);
+			return new Twople<>(line[2],shape);
 		}
 
 		throw new TokeniseException(PUT_SYN_ERR);
@@ -313,26 +318,26 @@ public class Parser {
 		
 		while('(' != tuple.charAt(pos))
 			pos++;
-		String fstDig = "";
+		StringBuilder fstDig = new StringBuilder();
 
 		while(',' != tuple.charAt(pos)) {
-			fstDig += tuple.charAt(pos);
+			fstDig.append(tuple.charAt(pos));
 			pos++;
 		}
 		// TODO - account for spaces
 
-		fst = Integer.parseInt(fstDig);
+		fst = Integer.parseInt(fstDig.toString());
 		pos += 1;
-		String sndDig = "";
+		StringBuilder sndDig = new StringBuilder();
 
 		while(')' != tuple.charAt(pos)) {
-			sndDig += tuple.charAt(pos);
+			sndDig.append(tuple.charAt(pos));
 			pos++;
 		}
 
-		snd = Integer.parseInt(sndDig);
+		snd = Integer.parseInt(sndDig.toString());
 
-		return new Twople(fst,snd);
+		return new Twople<>(fst,snd);
 	}
 
 	private static String dropWhileNEQ(String toDrop, String eq) {
