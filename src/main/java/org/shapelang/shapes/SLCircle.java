@@ -6,6 +6,7 @@ import javafx.animation.TranslateTransition;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
+import org.shapelang.common.parsercom.TokeniseException;
 
 /**
  * A basic circle, defined by its radius and positioned by (x,y) coordinates for its centre.
@@ -108,5 +109,40 @@ public class SLCircle extends Circle implements Shape
     public void setColor(Color color)
     {
         setFill(color);
+    }
+
+    /**
+     * By @p2titus
+     * Maps String -> SLCircle by parsing size
+     * @param line - text to parse
+     */
+    public static SLCircle parseSize(String[] line) throws TokeniseException{
+        if(!"put".equals(line[0]) || !"circle".equals(line[1]))
+            throw new TokeniseException("WRONG SHAPE IN PARSER");
+        else {
+            final double radius = getRadius(line);
+            return new SLCircle(radius);
+        }
+    }
+
+    private static double getRadius(String line[]) throws TokeniseException {
+        boolean isNext = false;
+        final int radius;
+        for(String word: line) {
+            if(isNext)
+                return parseSize(word);
+            else switch(word) {
+                case "radius":
+                    isNext = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+        throw new TokeniseException("ERROR: Size not found for circle");
+    }
+
+    private static double parseSize(String word) {
+        return Double.parseDouble(word);
     }
 }
