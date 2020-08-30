@@ -14,8 +14,6 @@ import java.util.Optional;
 // some loops will be found. This is for efficiency reasons
 // this could be done entirely functionally, but this would involve (more) recursion
 
-
-
 public class Parser {
 	private final static String NEW_PARA = "\\*\n*"; // TODO - ensure this works
 	private final static String NEW_WORD = "\\* ";
@@ -31,7 +29,7 @@ public class Parser {
 	private final static String INDENT_PUT_ERR = "Cannot instantiate shape there\nPlease move your shape instantiation elsewhere";
 
 	// maps a string to a tokenised representation of the text
-	// pre: null != toTokenise
+	// pre: null != toTokenise /\ 0 > toTokenise.length()
 	// post: state = state0 /\ String -> tokens
 	public static CanvasInit tokenise(String toTokenise) throws TokeniseException {
 		final String lc = toTokenise.toLowerCase();
@@ -39,14 +37,19 @@ public class Parser {
 		final String[] lines = lineify(fst);
 		final String[] words = wordify(lines[0]);
 
-		switch (words[0]) {
-			case "initialise":
-				final Twople<Integer,Integer> size = sizeString(words[2]);
-				final Text next = tokenise(Arrays.copyOfRange(lines, 1, lines.length),Optional.empty()).fst;
-				return new CanvasInit(size,next);
-			default:
-				throw new TokeniseException(CANV_INIT_ERR);
+		if(0 < words.length) {
+			switch (words[0]) {
+				case "initialise":
+					final Twople<Integer, Integer> size = sizeString(words[2]);
+					final Text next = tokenise(Arrays.copyOfRange(lines, 1, lines.length), Optional.empty()).fst;
+					return new CanvasInit(size, next);
+				default:
+					throw new TokeniseException(CANV_INIT_ERR);
+			}
 		}
+
+		else
+			throw new TokeniseException("u have no words"); // TODO - make proper exception message
 	}
 
 	private static Twople<Text, Integer> tokenise(String[] lines, Optional<Map<String,Shape>> prevMap)
