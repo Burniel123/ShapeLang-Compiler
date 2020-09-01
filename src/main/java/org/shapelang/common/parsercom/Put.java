@@ -15,6 +15,11 @@ public class Put implements StmtType
 		this.coords = coords;
 	}
 
+	// particular instance of time: always takes 0
+	public int time() {
+		return 0;
+	}
+
 	public final Shape shapeRef;	
 	public final Twople<Integer,Integer> coords;
 }

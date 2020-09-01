@@ -14,6 +14,11 @@ public class Sequential implements StmtType
 		this.text = text;
 	}
 
+	@Override
+	public int time() {
+		return 0;
+	}
+
 	public final Shape[] shapes;
 	public final Text text;
 }

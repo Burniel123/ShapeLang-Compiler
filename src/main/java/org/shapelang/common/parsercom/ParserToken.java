@@ -6,7 +6,6 @@ public enum ParserToken
 	PUT,
 	MOVE,
 	LOOP,
-	ACTION,
 	SEQ,
 	BLOCK,
 	RESIZE,

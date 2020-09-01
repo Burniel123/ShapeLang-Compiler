@@ -11,6 +11,12 @@ public class Block implements StmtType
 		return ParserToken.BLOCK;
 	}
 
+	// specifies how long to block after all shapes have reached
+	@Override
+	public int time() {
+		return 0;
+	}
+
 	public Block(Shape[] shapes) {
 		this.shapes = shapes;
 	}

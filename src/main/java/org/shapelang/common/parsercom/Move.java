@@ -16,6 +16,11 @@ public class Move implements StmtType
 		this.coord = coord;
 	}
 
+	@Override
+	public int time() {
+		return 0;
+	}
+
 	public final Shape shapeRef;
 	public final Twople<Integer,Integer> coord;
 }
