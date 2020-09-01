@@ -2,19 +2,25 @@ package org.shapelang.sequence;
 
 import org.shapelang.common.Twople;
 import org.shapelang.common.parsercom.*;
-import org.shapelang.shapes.Shape;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.List;
 import java.util.Queue;
 
 public class SequenceStmt {
     public static Queue<Action> sequence(CanvasInit ci) {
         final Text head = ci.next;
-        Optional<Text> curMaybe = Optional.of(head);
+        final List<Queue<Action>> sequenceQueues = sequenceAll(head);
+        return mergeSequences(sequenceQueues);
+    }
 
+    public static List<Queue<Action>> sequenceAll(Text head) {
+        // TODO - implement
+        return null;
+    }
 
+    public static Queue<Action> mergeSequences(List<Queue<Action>> seqs) {
+        // TODO - implement
+        return null;
     }
 }
 
