@@ -2,9 +2,9 @@ package org.shapelang.sequence;
 
 import org.shapelang.common.Twople;
 import org.shapelang.common.parsercom.*;
+import org.shapelang.shapes.Shape;
 
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 public class SequenceStmt {
     public static Queue<Action> sequence(CanvasInit ci) {
@@ -13,12 +13,40 @@ public class SequenceStmt {
         return mergeSequences(sequenceQueues);
     }
 
-    public static List<Queue<Action>> sequenceAll(Text head) {
+    private static List<Queue<Action>> sequenceAll(Text head) {
+        Optional<Text> curMaybe = Optional.of(head);
+        Map<Shape,Queue<Action>> maps = getConcMap(); // reassigned every time
+        // viewed as immutable
+
+        while(curMaybe.isPresent()) {
+            final Text cur = curMaybe.get();
+            maps = addStmt(cur.stmt);
+
+        }
+
         // TODO - implement
         return null;
     }
 
-    public static Queue<Action> mergeSequences(List<Queue<Action>> seqs) {
+    //
+    private static Map<Shape,Queue<Action>> addStmt(Map<Shape,Queue<Action>> origMap, StmtType stmt) {
+        switch(stmt) {
+            case Put:
+                break;
+            default:
+                System.out.println("oops");
+                return null;
+                break;
+        }
+
+        return null;
+    }
+
+    private static<K,V> Map<K,V> getConcMap() {
+        return new HashMap<>();
+    }
+
+    private static Queue<Action> mergeSequences(List<Queue<Action>> seqs) {
         // TODO - implement
         return null;
     }
