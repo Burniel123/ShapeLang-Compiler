@@ -74,7 +74,7 @@ public class SequenceStmt {
 
             map = addStmt(map,cur.stmt);
             // TODO - fix sequential timing
-            // currently none is implemented: might need to make the time field mutable
+            // currently nothing is implemented: might need to make the time field mutable
 
             currentTime += cur.stmt.time();
             curMaybe = cur.getNext();
@@ -91,15 +91,14 @@ public class SequenceStmt {
 
     private static Map<Shape,Queue<Action>> blockStmt(Map<Shape,Queue<Action>> map, Block block) {
         final Shape[] shapes = block.shapes;
-        final Map<Shape,Queue<Action>> cur = map;
 
         for(Shape shape: shapes) {
-            final Queue<Action> q = cur.get(shape);
+            final Queue<Action> q = map.get(shape);
             q.add(new Action(block,block.time()));
-            cur.put(shape,q);
+            map.put(shape,q);
         }
 
-        return cur;
+        return map;
     }
 
     private static Map<Shape,Queue<Action>> putStmt(Map<Shape,Queue<Action>> map, Put put) {
@@ -153,7 +152,7 @@ public class SequenceStmt {
         return q.iterator();
     }
 
-    // will interleave two queues based off time
+    // will interleave two queues based on time
     private static Queue<Action> mergeQs(Queue<Action> x, Queue<Action> y) {
         boolean isFin = x.isEmpty() || y.isEmpty();
         Action xCur = x.remove();
@@ -197,6 +196,32 @@ public class SequenceStmt {
         }
 
         return merge;
+    }
+
+    private class MutTime implements StmtType {
+        private int timeOffset = 0;
+        private final StmtType stmt;
+
+        public MutTime(StmtType stmt) {
+            this.stmt = stmt;
+        }
+
+        @Override
+        public ParserToken stmtType() {
+            return stmt.stmtType();
+        }
+
+        @Override
+        public int time() {
+            return stmt.time() + timeOffset;
+        }
+
+        public int getTimeOffset() {
+            return timeOffset;
+        }
+
+        
+
     }
 }
 
