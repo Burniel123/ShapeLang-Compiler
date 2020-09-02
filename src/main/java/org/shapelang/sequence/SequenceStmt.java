@@ -117,11 +117,89 @@ public class SequenceStmt {
         return new LinkedList<>();
     }
 
-    private static Queue<Action> mergeSequences(List<Queue<Action>> seqs) {
-        // TODO - implement
-        return null;
+
+    private static Queue<Action> mergeSequences(Collection<Queue<Action>> seqs) {
+        final Queue<Action>[] qs = (Queue<Action>[]) seqs.toArray();
+        final Iterator<Twople<Integer,Integer>> lrs = genSplits(qs.length);
+
+        while(lrs.hasNext()) {
+            final Twople<Integer,Integer> lr = lrs.next();
+            final int l = lr.fst;
+            final int r = lr.snd;
+            qs[l] = mergeQs(qs[l],qs[r]);
+        }
+
+        return qs[0];
+    }
+
+    // TODO - ensure correct
+    private static Iterator<Twople<Integer,Integer>> genSplits(int max) {
+        int size = 1;
+        final Queue<Twople<Integer,Integer>> q = getConcQ();
+        while(size < max) {
+            int l = 0;
+            int r = l+size;
+            final int incr = size * 2;
+
+            while(r < max) {
+                q.add(new Twople<>(l,r));
+                l += incr;
+                r += incr;
+            }
+
+            size *= 2;
+        }
+
+        return q.iterator();
+    }
+
+    // will interleave two queues based off time
+    private static Queue<Action> mergeQs(Queue<Action> x, Queue<Action> y) {
+        boolean isFin = x.isEmpty() || y.isEmpty();
+        Action xCur = x.remove();
+        Action yCur = y.remove();
+        int xTime = 0;
+        int yTime = 0;
+        boolean xPriority = true;
+
+        final Queue<Action> merge = getConcQ();
+
+        while(!isFin) {
+            if(xTime == yTime) {
+                final Action toQ;
+                if(xPriority) {
+                    toQ = xCur;
+                    xCur = x.remove();
+                    xTime += xCur.time();
+                }
+                else {
+                    toQ = y.remove();
+                    yCur = y.remove();
+                    yTime += yCur.time();
+                }
+                xPriority = !xPriority;
+                merge.add(toQ);
+            }
+
+            else if(xTime > yTime) {
+                merge.add(yCur);
+                yCur = y.remove();
+                yTime += yCur.time();
+            }
+
+            else {
+                merge.add(xCur);
+                xCur = x.remove();
+                xTime += xCur.time();
+            }
+
+            isFin = x.isEmpty() || y.isEmpty();
+        }
+
+        return merge;
     }
 }
+
 
 public class Action {
     final private Twople<StmtType,Integer> act;
