@@ -34,18 +34,64 @@ public class SequenceStmt {
                 return putStmt(map,(Put) stmt);
             case BLOCK:
                 return blockStmt(map, (Block) stmt);
+            case MOVE:
+                return moveStmt(map, (Move) stmt);
+            case SEQ:
+                return seqStmt(map, (Sequential) stmt);
+            case LOOP:
+                return loopStmt(map, (Loop) stmt);
+            case RESIZE:
+                return resizeStmt(map, (Resize) stmt);
+            case OTHER:
+                System.out.println("that isn't supported yet");
+                return map;
             default:
                 System.out.println("oops");
-                return null;
-                break;
+                return map;
+        }
+    }
+
+    private static Map<Shape,Queue<Action>> resizeStmt(Map<Shape,Queue<Action>> map, Resize rsz) {
+        final Queue<Action> q = map.get(rsz.shapeRef);
+        q.add(new Action(rsz,rsz.time()));
+        return map;
+    }
+
+    private static Map<Shape,Queue<Action>> loopStmt(Map<Shape,Queue<Action>> map, Loop loop) {
+        // TODO - does this require a 'generator' of some kind to deal with infinite loops
+        // I think it does
+        // Oh how the scala lazy would help here
+        return map;
+    }
+
+    private static Map<Shape,Queue<Action>> seqStmt(Map<Shape,Queue<Action>> map, Sequential seq) {
+        int currentTime = 0;
+        final Text head = seq.text;
+        Optional<Text> curMaybe = Optional.of(head);
+
+        while(curMaybe.isPresent()) {
+            final Text cur = curMaybe.get();
+
+            map = addStmt(map,cur.stmt);
+            // TODO - fix sequential timing
+            // currently none is implemented: might need to make the time field mutable
+
+            currentTime += cur.stmt.time();
+            curMaybe = cur.getNext();
         }
 
-        return null;
+        return map;
+    }
+
+    private static Map<Shape,Queue<Action>> moveStmt(Map<Shape,Queue<Action>> map, Move move) {
+        final Queue<Action> q = map.get(move.shapeRef);
+        q.add(new Action(move,move.time()));
+        return map;
     }
 
     private static Map<Shape,Queue<Action>> blockStmt(Map<Shape,Queue<Action>> map, Block block) {
         final Shape[] shapes = block.shapes;
-        Map<Shape,Queue<Action>> cur = map;
+        final Map<Shape,Queue<Action>> cur = map;
 
         for(Shape shape: shapes) {
             final Queue<Action> q = cur.get(shape);
