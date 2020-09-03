@@ -345,6 +345,7 @@ public class SequenceStmt {
     }
 
     // TODO - ensure correct
+    // TODO - will this work for infinite queues (those made by QueueLoop)?
     private static Iterator<Twople<Integer,Integer>> genSplits(int max) {
         int size = 1;
         final Queue<Twople<Integer,Integer>> q = getConcQ();

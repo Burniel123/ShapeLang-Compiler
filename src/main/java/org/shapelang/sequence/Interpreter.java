@@ -22,15 +22,18 @@ public class Interpreter {
             case MOVE:
                 execMove((Move) stmt);
                 break;
+            case LOOP:
+                break;
             case SEQ:
-                execSeq((Sequential) stmt);
+                break;
+            case BLOCK:
+                break;
+            case OTHER:
+                break;
+            case RESIZE:
                 break;
             default: break;
         }
-    }
-
-    private static void execSeq(Sequential seq) {
-
     }
 
     private static void execMove(Move mv) {
