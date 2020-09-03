@@ -1,5 +1,6 @@
 package org.shapelang.sequence;
 
+import org.jetbrains.annotations.NotNull;
 import org.shapelang.common.Twople;
 import org.shapelang.common.parsercom.*;
 import org.shapelang.shapes.Shape;
@@ -62,6 +63,136 @@ public class SequenceStmt {
         // I think it does
         // Oh how the scala lazy would help here
         return map;
+    }
+
+    private static class QueueLoop implements Queue<StmtType> {
+        private final Queue<StmtType> prev;
+        private final Queue<StmtType> after = getConcQ();
+        private final StmtType[] orig;
+        private Queue<StmtType> loop = null;
+        private final boolean isInfinite;
+        private int numIter;
+
+        public QueueLoop(Queue<StmtType> prev, Queue<StmtType> loop, int numIter) {
+            this.prev = prev;
+            this.loop = loop;
+            orig = loop.toArray(new StmtType[0]);
+            isInfinite = numIter <= 0;
+            this.numIter = numIter;
+        }
+
+        private void refresh() {
+            if(loop.isEmpty() && numIter > 0) {
+                loop = (Queue<StmtType>) Arrays.asList(orig.clone());
+                numIter--;
+            }
+        }
+
+        @Override
+        public int size() {
+            int factor = numIter;
+            if(factor < 1)
+                factor = 1;
+            return prev.size() + (loop.size() * factor) + after.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return prev.isEmpty() && loop.isEmpty() && after.isEmpty();
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            return prev.contains(o) || loop.contains(o) || after.contains(o);
+        }
+
+        /*
+         * THIS METHOD DOES NOT WORK CORRECTLY FOR INFINITE LISTS DUE TO EAGER EVAL
+         */
+        @NotNull
+        @Override
+        public Iterator<StmtType> iterator() {
+            return null; // TODO - fix
+        }
+
+        @NotNull
+        @Override
+        public Object[] toArray() {
+            return new Object[0];
+        }
+
+        @NotNull
+        @Override
+        public <T> T[] toArray(@NotNull T[] a) {
+            return null;
+        }
+
+        @Override
+        public boolean add(StmtType stmtType) {
+            return prev.add(stmtType);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            boolean isRemoved = prev.remove(o);
+            if(!isRemoved)
+                isRemoved = loop.remove(o);
+            if(!isRemoved)
+                isRemoved = after.remove(o);
+            return isRemoved;
+        }
+
+        @Override
+        public boolean containsAll(@NotNull Collection<?> c) {
+            return false;
+        }
+
+        @Override
+        public boolean addAll(@NotNull Collection<? extends StmtType> c) {
+            return false;
+        }
+
+        @Override
+        public boolean removeAll(@NotNull Collection<?> c) {
+            return false;
+        }
+
+        @Override
+        public boolean retainAll(@NotNull Collection<?> c) {
+            return false;
+        }
+
+        @Override
+        public void clear() {
+            prev.clear();
+            loop.clear();
+            after.clear();
+        }
+
+        @Override
+        public boolean offer(StmtType stmtType) {
+            return false;
+        }
+
+        @Override
+        public StmtType remove() {
+            return null;
+        }
+
+        @Override
+        public StmtType poll() {
+            return null;
+        }
+
+        @Override
+        public StmtType element() {
+            return null;
+        }
+
+        @Override
+        public StmtType peek() {
+            return null;
+        }
     }
 
     private static Map<Shape,Queue<Action>> seqStmt(Map<Shape,Queue<Action>> map, Sequential seq) {
@@ -226,9 +357,6 @@ public class SequenceStmt {
         public int time() {
             return stmt.time() + timeOffset;
         }
-        }
-        
-
     }
 }
 
