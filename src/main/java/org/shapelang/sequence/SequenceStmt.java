@@ -72,11 +72,15 @@ public class SequenceStmt {
         while(curMaybe.isPresent()) {
             final Text cur = curMaybe.get();
 
-            map = addStmt(map,cur.stmt);
-            // TODO - fix sequential timing
-            // currently nothing is implemented: might need to make the time field mutable
+            final StmtType origStmt = cur.stmt;
 
-            currentTime += cur.stmt.time();
+            // MutTime has an additional time field that can 'offset' the previous time
+            // Basically a wrapper around a StmtType that can be used to set a different time
+            final MutTime stmt = new MutTime(origStmt,currentTime);
+
+            map = addStmt(map,stmt);
+
+            currentTime += origStmt.time();
             curMaybe = cur.getNext();
         }
 
@@ -195,15 +199,22 @@ public class SequenceStmt {
             isFin = x.isEmpty() || y.isEmpty();
         }
 
+        while(!x.isEmpty())
+            merge.add(x.remove());
+        while(!y.isEmpty())
+            merge.add(y.remove());
+
+
         return merge;
     }
 
-    private class MutTime implements StmtType {
-        private int timeOffset = 0;
+    private static class MutTime implements StmtType {
+        private final int timeOffset;
         private final StmtType stmt;
 
-        public MutTime(StmtType stmt) {
+        public MutTime(StmtType stmt, int timeOffset) {
             this.stmt = stmt;
+            this.timeOffset = timeOffset;
         }
 
         @Override
@@ -215,11 +226,7 @@ public class SequenceStmt {
         public int time() {
             return stmt.time() + timeOffset;
         }
-
-        public int getTimeOffset() {
-            return timeOffset;
         }
-
         
 
     }
