@@ -144,22 +144,40 @@ public class SequenceStmt {
 
         @Override
         public boolean containsAll(@NotNull Collection<?> c) {
-            return false;
+            final Iterator<?> it = c.iterator();
+            boolean cont = true;
+            while(it.hasNext() && cont) {
+                final Object cur = it.next();
+                cont = prev.contains(cur) || loop.contains(cur) || after.contains(cur);
+            }
+
+            return cont;
         }
 
         @Override
         public boolean addAll(@NotNull Collection<? extends StmtType> c) {
-            return false;
+            return after.addAll(c);
         }
 
         @Override
         public boolean removeAll(@NotNull Collection<?> c) {
-            return false;
+            boolean allRem = true;
+            for (Object cur : c) {
+                boolean curRem = prev.remove(cur);
+                if(!curRem)
+                    curRem = loop.remove(cur);
+                if(!curRem)
+                    curRem = after.remove(cur);
+                allRem = allRem && curRem;
+            }
+
+            return allRem;
         }
 
         @Override
         public boolean retainAll(@NotNull Collection<?> c) {
-            return false;
+            // good enough for req functionality - not a great implementation
+            return prev.retainAll(c) || loop.retainAll(c) || after.retainAll(c);
         }
 
         @Override
@@ -171,27 +189,51 @@ public class SequenceStmt {
 
         @Override
         public boolean offer(StmtType stmtType) {
-            return false;
+            return after.offer(stmtType);
         }
 
         @Override
         public StmtType remove() {
-            return null;
+            refresh();
+            if(!prev.isEmpty())
+                return prev.remove();
+            else if(!loop.isEmpty())
+                return loop.remove();
+            else
+                return after.remove();
         }
 
         @Override
         public StmtType poll() {
-            return null;
+            refresh();
+            if(!prev.isEmpty())
+                return prev.remove();
+            else if(!loop.isEmpty())
+                return loop.remove();
+            else
+                return after.poll();
         }
 
         @Override
         public StmtType element() {
-            return null;
+            refresh();
+            if(!prev.isEmpty())
+                return prev.element();
+            else if(!loop.isEmpty())
+                return loop.element();
+            else
+                return after.element();
         }
 
         @Override
         public StmtType peek() {
-            return null;
+            refresh();
+            if(!prev.isEmpty())
+                return prev.peek();
+            else if(!loop.isEmpty())
+                return loop.peek();
+            else
+                return after.peek();
         }
     }
 
