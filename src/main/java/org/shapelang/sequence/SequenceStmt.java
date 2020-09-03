@@ -10,13 +10,16 @@ import java.util.*;
 public class SequenceStmt {
     public static Queue<Action> sequence(CanvasInit ci) {
         final Text head = ci.next;
-        final Collection<Queue<Action>> sequenceQueues = sequenceAll(head);
+        final Collection<Queue<Action>> sequenceQueues = sequenceAll(head,Optional.empty());
         return mergeSequences(sequenceQueues);
     }
 
-    private static Collection<Queue<Action>> sequenceAll(Text head) {
+    private static Collection<Queue<Action>> sequenceAll(Text head, Optional<Map<Shape,Queue<Action>>> mapbe) {
         Optional<Text> curMaybe = Optional.of(head);
-        Map<Shape,Queue<Action>> qs = getConcMap(); // reassigned every time
+
+        Map<Shape,Queue<Action>> qs = null; // reassigned every time
+        // NOT NULL FOR LONG
+        qs = mapbe.orElseGet(SequenceStmt::getConcMap);
         // viewed as immutable
 
         while(curMaybe.isPresent()) {
@@ -60,30 +63,63 @@ public class SequenceStmt {
 
     private static Map<Shape,Queue<Action>> loopStmt(Map<Shape,Queue<Action>> map, Loop loop) {
         // TODO - does this require a 'generator' of some kind to deal with infinite loops
-        // I think it does
-        // Oh how the scala lazy would help here
+        final Shape[] shapes = loop.shapes;
+        final Queue<Action>[] qs = new Queue[shapes.length];
+
+        /* general plan:
+         * remove all queues pertaining to the shapes in the loop
+         * do the loop ones via a semi recursive call - can't semi recurse directly, no
+         * insert the original q and the loop queue into queue loop
+         */
+
+
+        for(int i = 0; i < shapes.length; i++) {
+            final Shape shape = shapes[i];
+            final Put def = new Put(shape,new Twople<>(0,0));
+
+            qs[i] = map.remove(shape);
+            final Queue<Action> defQ = getConcQ();
+            defQ.add(new Action(def,0));
+
+            map.put(shape,defQ);
+        }
+
+        sequenceAll(loop.contents,Optional.of(map));
+        // i dislike this, but it will modify state
+
+        for(int i = 0; i < shapes.length; i++) {
+            final Shape shape = shapes[i];
+            final Queue<Action> prevQ = qs[i];
+
+            final Queue<Action> loopQ = map.remove(shape);
+
+            map.put(shape,new QueueLoop(prevQ,loopQ,loop.numIter.orElse(0)));
+        }
+
         return map;
     }
 
-    private static class QueueLoop implements Queue<StmtType> {
-        private final Queue<StmtType> prev;
-        private final Queue<StmtType> after = getConcQ();
-        private final StmtType[] orig;
-        private Queue<StmtType> loop = null;
+
+    // TODO - could this be written generically
+    private static class QueueLoop implements Queue<Action> {
+        private final Queue<Action> prev;
+        private final Queue<Action> after = getConcQ();
+        private final Action[] orig;
+        private Queue<Action> loop = null;
         private final boolean isInfinite;
         private int numIter;
 
-        public QueueLoop(Queue<StmtType> prev, Queue<StmtType> loop, int numIter) {
+        public QueueLoop(Queue<Action> prev, Queue<Action> loop, int numIter) {
             this.prev = prev;
             this.loop = loop;
-            orig = loop.toArray(new StmtType[0]);
+            orig = loop.toArray(new Action[0]);
             isInfinite = numIter <= 0;
             this.numIter = numIter;
         }
 
         private void refresh() {
-            if(loop.isEmpty() && numIter > 0) {
-                loop = (Queue<StmtType>) Arrays.asList(orig.clone());
+            if(loop.isEmpty() && (isInfinite || numIter > 0)) {
+                loop = (Queue<Action>) Arrays.asList(orig.clone());
                 numIter--;
             }
         }
@@ -111,8 +147,8 @@ public class SequenceStmt {
          */
         @NotNull
         @Override
-        public Iterator<StmtType> iterator() {
-            return null; // TODO - fix
+        public Iterator<Action> iterator() {
+            return after.iterator(); // TODO - fix
         }
 
         @NotNull
@@ -128,8 +164,8 @@ public class SequenceStmt {
         }
 
         @Override
-        public boolean add(StmtType stmtType) {
-            return prev.add(stmtType);
+        public boolean add(Action action) {
+            return after.add(action);
         }
 
         @Override
@@ -155,7 +191,7 @@ public class SequenceStmt {
         }
 
         @Override
-        public boolean addAll(@NotNull Collection<? extends StmtType> c) {
+        public boolean addAll(@NotNull Collection<? extends Action> c) {
             return after.addAll(c);
         }
 
@@ -188,12 +224,12 @@ public class SequenceStmt {
         }
 
         @Override
-        public boolean offer(StmtType stmtType) {
-            return after.offer(stmtType);
+        public boolean offer(Action action) {
+            return after.offer(action);
         }
 
         @Override
-        public StmtType remove() {
+        public Action remove() {
             refresh();
             if(!prev.isEmpty())
                 return prev.remove();
@@ -204,7 +240,7 @@ public class SequenceStmt {
         }
 
         @Override
-        public StmtType poll() {
+        public Action poll() {
             refresh();
             if(!prev.isEmpty())
                 return prev.remove();
@@ -215,7 +251,7 @@ public class SequenceStmt {
         }
 
         @Override
-        public StmtType element() {
+        public Action element() {
             refresh();
             if(!prev.isEmpty())
                 return prev.element();
@@ -226,7 +262,7 @@ public class SequenceStmt {
         }
 
         @Override
-        public StmtType peek() {
+        public Action peek() {
             refresh();
             if(!prev.isEmpty())
                 return prev.peek();
