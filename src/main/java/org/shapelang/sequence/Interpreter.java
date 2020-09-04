@@ -9,10 +9,11 @@ public class Interpreter {
         while(!actQ.isEmpty()) {
             final Action act = actQ.remove();
             interpret(act);
-
         }
     }
 
+    // hopefully this is all we need
+    // I _highly_ doubt it
     private static void interpret(Action act) {
         final StmtType stmt = act.stmt();
         switch(stmt.stmtType()) {
@@ -22,18 +23,16 @@ public class Interpreter {
             case MOVE:
                 execMove((Move) stmt);
                 break;
-            case LOOP:
-                break;
-            case SEQ:
-                break;
-            case BLOCK:
-                break;
-            case OTHER:
-                break;
             case RESIZE:
+                execResize((Resize) stmt);
                 break;
             default: break;
         }
+
+    }
+
+    private static void execResize(Resize rsz) {
+        rsz.shapeRef.resizeTransition(rsz.factor,rsz.time());
     }
 
     private static void execMove(Move mv) {
