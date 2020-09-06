@@ -21,18 +21,6 @@
             <version>RELEASE</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -50,6 +38,7 @@
                 <version>0.0.1</version>
                 <configuration>
                     <mainClass>org.shapelang.Main</mainClass>
+                    <commandlineArgs>test.txt</commandlineArgs>
                 </configuration>
             </plugin>
         </plugins>
